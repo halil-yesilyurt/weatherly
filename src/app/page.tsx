@@ -1,22 +1,46 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { WeatherData, ForecastData, TemperatureUnit } from '@/types/weather';
+import { useState, useEffect, useCallback } from 'react';
+import { WeatherData, ForecastData } from '@/types/weather';
 import { weatherService } from '@/services/weatherService';
 import SearchBar from '@/components/SearchBar';
 import WeatherCard from '@/components/WeatherCard';
 import HourlyForecast from '@/components/HourlyForecast';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import ErrorMessage from '@/components/ErrorMessage';
+import DemoNotice from '@/components/DemoNotice';
 
 export default function Home() {
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [forecast, setForecast] = useState<ForecastData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [unit, setUnit] = useState<TemperatureUnit>('celsius');
 
-  const fetchWeatherByLocation = async () => {
+  // Check if we're using demo data
+  const isDemoMode = !process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY || 
+                     process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY === 'demo_key' ||
+                     process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY === 'your_api_key_here';
+
+  const fetchWeatherByCity = useCallback(async (city: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const [weatherData, forecastData] = await Promise.all([
+        weatherService.getCurrentWeatherByCity(city),
+        weatherService.getForecastByCity(city),
+      ]);
+      
+      setWeather(weatherData);
+      setForecast(forecastData);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch weather data');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchWeatherByLocation = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -36,26 +60,7 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const fetchWeatherByCity = async (city: string) => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const [weatherData, forecastData] = await Promise.all([
-        weatherService.getCurrentWeatherByCity(city),
-        weatherService.getForecastByCity(city),
-      ]);
-      
-      setWeather(weatherData);
-      setForecast(forecastData);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch weather data');
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [fetchWeatherByCity]);
 
   const handleSearch = (city: string) => {
     fetchWeatherByCity(city);
@@ -67,7 +72,7 @@ export default function Home() {
 
   useEffect(() => {
     fetchWeatherByLocation();
-  }, []);
+  }, [fetchWeatherByLocation]);
 
   return (
     <main className="min-h-screen p-4 md:p-8">
@@ -83,6 +88,9 @@ export default function Home() {
           <SearchBar onSearch={handleSearch} isLoading={loading} />
         </div>
 
+        {/* Demo Notice */}
+        {isDemoMode && <DemoNotice />}
+
         {/* Content */}
         <div className="space-y-8">
           {loading && <LoadingSpinner />}
@@ -94,7 +102,7 @@ export default function Home() {
           {weather && forecast && !loading && !error && (
             <>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <WeatherCard weather={weather} unit={unit} />
+                <WeatherCard weather={weather} unit="celsius" />
                 <HourlyForecast forecast={forecast} />
               </div>
               
@@ -129,15 +137,15 @@ export default function Home() {
                   <h3 className="text-lg font-medium mb-4 text-white/80">Other Cities</h3>
                   <div className="space-y-4">
                     {['New York', 'Tokyo', 'Paris'].map((city, index) => (
-                      <div key={index} className="glass-dark rounded-2xl p-4">
+                      <div key={index} className="glass-dark rounded-2xl p-4 cursor-pointer hover:bg-white/5 transition-colors" onClick={() => handleSearch(city)}>
                         <div className="flex justify-between items-center">
                           <div>
                             <p className="text-sm font-medium">{city}</p>
-                            <p className="text-xs text-white/50">Partly Cloudy</p>
+                            <p className="text-xs text-white/50">Click to view</p>
                           </div>
                           <div className="text-right">
                             <span className="text-2xl">⛅</span>
-                            <p className="text-lg font-medium">23°</p>
+                            <p className="text-lg font-medium">--°</p>
                           </div>
                         </div>
                       </div>
