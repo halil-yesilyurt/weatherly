@@ -71,7 +71,6 @@ export default function HourlyForecast({ forecast, unit }: HourlyForecastProps) 
     <div className="glass rounded-3xl p-6 text-white overflow-hidden">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-medium text-white/80">24-Hour Forecast</h3>
-        <div className="text-xs text-white/50">Next 8 periods</div>
       </div>
       
       <div className="relative">
@@ -148,8 +147,8 @@ export default function HourlyForecast({ forecast, unit }: HourlyForecastProps) 
                 )}
 
                 {/* Wind Speed Indicator */}
-                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <div className="text-xs text-white/50 bg-black/20 rounded-lg px-2 py-1">
+                <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                  <div className="text-xs text-white/70 bg-black/50 backdrop-blur-sm rounded-md px-1.5 py-0.5 whitespace-nowrap">
                     🌬 {Math.round(item.wind.speed)}m/s
                   </div>
                 </div>
