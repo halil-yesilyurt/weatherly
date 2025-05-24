@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { searchCities } from '@/data/cities';
+import { weatherService } from '@/services/weatherService';
 import { useDebounce } from '@/hooks/useDebounce';
 
 interface SearchBarProps {
@@ -12,35 +12,76 @@ interface SearchBarProps {
   onChange?: (value: string) => void;
 }
 
+interface CitySearchResult {
+  name: string;
+  country: string;
+  state?: string;
+  displayName: string;
+}
+
 export default function SearchBar({ onSearch, isLoading = false, value = '', onChange }: SearchBarProps) {
   const [query, setQuery] = useState(value);
-  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [suggestions, setSuggestions] = useState<CitySearchResult[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [isExternalUpdate, setIsExternalUpdate] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
   const debouncedQuery = useDebounce(query, 300);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
   // Update internal state when external value changes
   useEffect(() => {
-    setQuery(value);
-  }, [value]);
+    if (value !== query) {
+      setIsExternalUpdate(true);
+      setQuery(value);
+      setShowSuggestions(false); // Don't show suggestions when value is set externally
+    }
+  }, [value, query]);
 
   // Handle debounced search for suggestions
   useEffect(() => {
-    if (debouncedQuery.length >= 2) {
-      const results = searchCities(debouncedQuery, 5);
-      setSuggestions(results);
-      setShowSuggestions(results.length > 0);
-    } else {
-      setSuggestions([]);
-      setShowSuggestions(false);
-    }
-    setSelectedIndex(-1);
-  }, [debouncedQuery]);
+    const searchCities = async () => {
+      // Only show suggestions if user is typing (not external update)
+      if (debouncedQuery.length >= 2 && !isExternalUpdate) {
+        setIsSearching(true);
+        try {
+          const results = await weatherService.searchCities(debouncedQuery, 5);
+          const formattedResults: CitySearchResult[] = results.map(city => ({
+            name: city.name,
+            country: city.country,
+            state: city.state,
+            displayName: `${city.name}, ${city.state ? `${city.state}, ` : ''}${city.country}`
+          }));
+          
+          setSuggestions(formattedResults);
+          setShowSuggestions(formattedResults.length > 0);
+        } catch (error) {
+          console.error('Error searching cities:', error);
+          setSuggestions([]);
+          setShowSuggestions(false);
+        } finally {
+          setIsSearching(false);
+        }
+      } else {
+        setSuggestions([]);
+        setShowSuggestions(false);
+        setIsSearching(false);
+      }
+      setSelectedIndex(-1);
+      
+      // Reset external update flag after processing
+      if (isExternalUpdate) {
+        setIsExternalUpdate(false);
+      }
+    };
+
+    searchCities();
+  }, [debouncedQuery, isExternalUpdate]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
+    setIsExternalUpdate(false); // User is typing
     setQuery(newValue);
     onChange?.(newValue);
   };
@@ -54,10 +95,10 @@ export default function SearchBar({ onSearch, isLoading = false, value = '', onC
     }
   };
 
-  const handleSuggestionClick = (city: string) => {
-    setQuery(city);
-    onChange?.(city);
-    onSearch(city);
+  const handleSuggestionClick = (city: CitySearchResult) => {
+    setQuery(city.name);
+    onChange?.(city.name);
+    onSearch(city.name);
     setShowSuggestions(false);
     inputRef.current?.blur();
   };
@@ -97,6 +138,7 @@ export default function SearchBar({ onSearch, isLoading = false, value = '', onC
     onChange?.('');
     setSuggestions([]);
     setShowSuggestions(false);
+    setIsExternalUpdate(false);
     inputRef.current?.focus();
   };
 
@@ -117,7 +159,7 @@ export default function SearchBar({ onSearch, isLoading = false, value = '', onC
   }, []);
 
   return (
-    <div className="relative w-full max-w-md mx-auto">
+    <div className="relative w-full">
       <form onSubmit={handleSubmit}>
         <div className="relative">
           <input
@@ -127,11 +169,11 @@ export default function SearchBar({ onSearch, isLoading = false, value = '', onC
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             onFocus={() => {
-              if (suggestions.length > 0) {
+              if (suggestions.length > 0 && !isExternalUpdate) {
                 setShowSuggestions(true);
               }
             }}
-            placeholder="Search City"
+            placeholder="Search any city worldwide..."
             className="w-full px-4 py-3 pl-12 pr-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-transparent transition-all duration-200"
             disabled={isLoading}
             autoComplete="off"
@@ -148,7 +190,7 @@ export default function SearchBar({ onSearch, isLoading = false, value = '', onC
             </button>
           )}
           
-          {isLoading && (
+          {(isLoading || isSearching) && (
             <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
             </div>
@@ -157,14 +199,14 @@ export default function SearchBar({ onSearch, isLoading = false, value = '', onC
       </form>
 
       {/* Suggestions Dropdown */}
-      {showSuggestions && suggestions.length > 0 && (
+      {showSuggestions && suggestions.length > 0 && !isExternalUpdate && (
         <div
           ref={suggestionsRef}
           className="absolute top-full left-0 right-0 mt-2 glass rounded-2xl border border-white/20 backdrop-blur-md z-50 max-h-60 overflow-y-auto"
         >
           {suggestions.map((city, index) => (
             <button
-              key={city}
+              key={`${city.name}-${city.country}`}
               onClick={() => handleSuggestionClick(city)}
               className={`w-full px-4 py-3 text-left text-white hover:bg-white/10 transition-colors first:rounded-t-2xl last:rounded-b-2xl ${
                 index === selectedIndex ? 'bg-white/10' : ''
@@ -172,7 +214,10 @@ export default function SearchBar({ onSearch, isLoading = false, value = '', onC
             >
               <div className="flex items-center">
                 <MagnifyingGlassIcon className="w-4 h-4 text-white/40 mr-3" />
-                <span className="text-sm">{city}</span>
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium">{city.name}</span>
+                  <span className="text-xs text-white/60">{city.country}{city.state && `, ${city.state}`}</span>
+                </div>
               </div>
             </button>
           ))}

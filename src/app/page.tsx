@@ -20,6 +20,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [unit, setUnit] = useState<TemperatureUnit>('celsius');
   const [searchValue, setSearchValue] = useState('');
+  const [isTemperatureChanging, setIsTemperatureChanging] = useState(false);
 
   // Check if we're using demo data
   const isDemoMode = !process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY || 
@@ -85,7 +86,13 @@ export default function Home() {
   };
 
   const handleTemperatureToggle = (newUnit: TemperatureUnit) => {
+    setIsTemperatureChanging(true);
     setUnit(newUnit);
+    
+    // Add a small delay for visual feedback
+    setTimeout(() => {
+      setIsTemperatureChanging(false);
+    }, 500);
   };
 
   useEffect(() => {
@@ -104,15 +111,23 @@ export default function Home() {
             beautiful weather, at a glance
           </p>
           
-          {/* Search and Temperature Toggle */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
-            <SearchBar 
-              onSearch={handleSearch} 
-              isLoading={loading}
-              value={searchValue}
-              onChange={setSearchValue}
-            />
-            <TemperatureToggle unit={unit} onToggle={handleTemperatureToggle} />
+          {/* Search and Temperature Toggle - Better centering for mobile */}
+          <div className="flex flex-col items-center justify-center gap-4 mb-6 w-full relative">
+            <div className="w-full max-w-md">
+              <SearchBar 
+                onSearch={handleSearch} 
+                isLoading={loading}
+                value={searchValue}
+                onChange={setSearchValue}
+              />
+            </div>
+            <div className="flex justify-center absolute right-0">
+              <TemperatureToggle 
+                unit={unit} 
+                onToggle={handleTemperatureToggle} 
+                isLoading={isTemperatureChanging}
+              />
+            </div>
           </div>
         </div>
 
@@ -120,7 +135,7 @@ export default function Home() {
         {isDemoMode && <DemoNotice />}
 
         {/* Content */}
-        <div className="space-y-8">
+        <div className={`space-y-8 transition-all duration-500 ${isTemperatureChanging ? 'opacity-80 transform scale-[0.99]' : 'opacity-100 transform scale-100'}`}>
           {loading && <LoadingSpinner />}
           
           {error && !loading && (
@@ -143,10 +158,29 @@ export default function Home() {
                     <div className="text-xs text-white/50">Extended forecast</div>
                   </div>
                   <div className="space-y-3">
-                    {forecast.list
-                      .filter((_, index) => index % 8 === 0) // Every 8th item (24 hours apart)
-                      .slice(0, 7)
-                      .map((item, index) => {
+                    {(() => {
+                      // Get unique days starting from tomorrow
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      
+                      const uniqueDays = [];
+                      const processedDates = new Set();
+                      
+                      for (const item of forecast.list) {
+                        const itemDate = new Date(item.dt * 1000);
+                        const dateKey = itemDate.toDateString();
+                        
+                        // Skip today and already processed dates
+                        if (itemDate >= today && !processedDates.has(dateKey)) {
+                          processedDates.add(dateKey);
+                          uniqueDays.push(item);
+                          
+                          // Stop once we have 7 days
+                          if (uniqueDays.length >= 7) break;
+                        }
+                      }
+                      
+                      return uniqueDays.map((item, index) => {
                         const convertTemp = (temp: number) => {
                           if (unit === 'fahrenheit') {
                             return Math.round((temp * 9/5) + 32);
@@ -154,12 +188,13 @@ export default function Home() {
                           return Math.round(temp);
                         };
                         const tempSymbol = unit === 'fahrenheit' ? '°F' : '°C';
+                        const itemDate = new Date(item.dt * 1000);
                         
                         return (
                           <div key={index} className="flex justify-between items-center glass-dark rounded-xl p-3 hover:bg-white/5 transition-colors">
                             <span className="text-sm text-white/70 font-medium">
-                              {index === 0 ? 'Today' : 
-                               new Date(item.dt * 1000).toLocaleDateString('en-US', { weekday: 'short' })}
+                              {index === 0 ? 'Tomorrow' : 
+                               itemDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
                             </span>
                             <div className="flex items-center space-x-3">
                               <span className="text-lg">
@@ -171,7 +206,8 @@ export default function Home() {
                             </div>
                           </div>
                         );
-                      })}
+                      });
+                    })()}
                   </div>
                 </div>
 
