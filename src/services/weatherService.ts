@@ -6,7 +6,7 @@ const BASE_URL = 'https://api.openweathermap.org/data/2.5';
 const USE_DEMO_DATA = API_KEY === 'demo_key' || API_KEY === 'your_api_key_here';
 
 class WeatherService {
-  private async fetchWeatherData(endpoint: string): Promise<any> {
+  private async fetchWeatherData(endpoint: string): Promise<WeatherData | ForecastData> {
     try {
       const response = await fetch(endpoint);
       
@@ -29,7 +29,7 @@ class WeatherService {
     }
     
     const endpoint = `${BASE_URL}/weather?q=${encodeURIComponent(city)}&appid=${API_KEY}&units=metric`;
-    return this.fetchWeatherData(endpoint);
+    return this.fetchWeatherData(endpoint) as Promise<WeatherData>;
   }
 
   async getCurrentWeatherByCoords(lat: number, lon: number): Promise<WeatherData> {
@@ -40,7 +40,7 @@ class WeatherService {
     }
     
     const endpoint = `${BASE_URL}/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`;
-    return this.fetchWeatherData(endpoint);
+    return this.fetchWeatherData(endpoint) as Promise<WeatherData>;
   }
 
   async getForecastByCity(city: string): Promise<ForecastData> {
@@ -51,7 +51,7 @@ class WeatherService {
     }
     
     const endpoint = `${BASE_URL}/forecast?q=${encodeURIComponent(city)}&appid=${API_KEY}&units=metric`;
-    return this.fetchWeatherData(endpoint);
+    return this.fetchWeatherData(endpoint) as Promise<ForecastData>;
   }
 
   async getForecastByCoords(lat: number, lon: number): Promise<ForecastData> {
@@ -62,7 +62,7 @@ class WeatherService {
     }
     
     const endpoint = `${BASE_URL}/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`;
-    return this.fetchWeatherData(endpoint);
+    return this.fetchWeatherData(endpoint) as Promise<ForecastData>;
   }
 
   getWeatherIconUrl(iconCode: string): string {
