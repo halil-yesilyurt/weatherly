@@ -9,36 +9,60 @@ interface TemperatureToggleProps {
 }
 
 export default function TemperatureToggle({ unit, onToggle, isLoading = false }: TemperatureToggleProps) {
+  const handleToggle = () => {
+    if (!isLoading) {
+      const newUnit = unit === 'celsius' ? 'fahrenheit' : 'celsius';
+      onToggle(newUnit);
+    }
+  };
+
   return (
-    <div className="flex items-center glass rounded-2xl p-1 bg-white/5 relative">
+    <div className="relative">
       {/* Loading overlay */}
       {isLoading && (
-        <div className="absolute inset-0 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+        <div className="absolute inset-0 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-sm z-10">
           <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
         </div>
       )}
       
+      {/* Toggle Button */}
       <button
-        onClick={() => onToggle('celsius')}
+        onClick={handleToggle}
         disabled={isLoading}
-        className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer ${
-          unit === 'celsius'
-            ? 'bg-white/20 text-white shadow-lg transform scale-105'
-            : 'text-white/60 hover:text-white/80 hover:bg-white/5'
-        } ${isLoading ? 'pointer-events-none' : ''}`}
+        className={`relative flex items-center glass rounded-2xl p-1 bg-white/5 w-24 h-10 transition-all duration-300 cursor-pointer ${
+          isLoading ? 'pointer-events-none opacity-50' : 'hover:bg-white/10'
+        }`}
+        aria-label={`Switch to ${unit === 'celsius' ? 'Fahrenheit' : 'Celsius'}`}
+        role="switch"
+        aria-checked={unit === 'fahrenheit'}
       >
-        °C
-      </button>
-      <button
-        onClick={() => onToggle('fahrenheit')}
-        disabled={isLoading}
-        className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer ${
-          unit === 'fahrenheit'
-            ? 'bg-white/20 text-white shadow-lg transform scale-105'
-            : 'text-white/60 hover:text-white/80 hover:bg-white/5'
-        } ${isLoading ? 'pointer-events-none' : ''}`}
-      >
-        °F
+        {/* Toggle Background Track */}
+        <div className="absolute inset-1 rounded-xl bg-white/5"></div>
+        
+        {/* Moving Toggle Indicator */}
+        <div
+          className={`absolute top-1 bottom-1 w-10 bg-white/20 rounded-xl shadow-lg transition-all duration-300 transform ${
+            unit === 'celsius' ? 'left-1' : 'left-[calc(100%-2.75rem)]'
+          }`}
+        ></div>
+        
+        {/* Temperature Labels */}
+        <div className="relative z-10 flex w-full justify-between items-center px-2">
+          <span
+            className={`text-sm font-medium transition-all duration-300 ${
+              unit === 'celsius' ? 'text-white' : 'text-white/60'
+            }`}
+          >
+            °C
+          </span>
+          <span
+            className={`text-sm font-medium transition-all duration-300 ${
+              unit === 'fahrenheit' ? 'text-white' : 'text-white/60'
+            }`}
+          >
+            °F
+          </span>
+        </div>
       </button>
     </div>
   );
