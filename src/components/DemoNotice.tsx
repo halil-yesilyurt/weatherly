@@ -6,7 +6,7 @@ export default function DemoNotice() {
         <h3 className="text-lg font-medium">Demo Mode</h3>
       </div>
       <p className="text-sm text-white/60">
-        You're viewing demo weather data. To get real weather information, 
+        You&apos;re viewing demo weather data. To get real weather information, 
         add your OpenWeather API key to the <code className="bg-white/10 px-1 rounded">.env.local</code> file.
       </p>
       <p className="text-xs text-white/40 mt-2">
