@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Jersey+15&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Sour+Gummy:ital,wght@0,100..900;1,100..900&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -19,10 +20,10 @@ body {
   background: var(--background);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
-
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -39,6 +40,20 @@ body {
   background: rgba(255, 255, 255, 0.5);
 }
 
+/* Thin scrollbar utilities */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.1);
+}
+
+.scrollbar-thumb-white\/20::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.scrollbar-track-transparent::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 /* Glass effect utility class */
 .glass {
   background: rgba(255, 255, 255, 0.1);
@@ -50,4 +65,34 @@ body {
   background: rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Temperature bar animation */
+@keyframes temperatureRise {
+  0% {
+    height: 0;
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.temperature-bar {
+  animation: temperatureRise 1s ease-out forwards;
+}
+
+/* Pulse animation for grid */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* Caveat font utility */
+.font-caveat {
+  font-family: 'Caveat', cursive;
 }
