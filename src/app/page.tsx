@@ -165,10 +165,7 @@ export default function Home() {
                       const tomorrow = new Date(today);
                       tomorrow.setDate(today.getDate() + 1);
                       tomorrow.setHours(0, 0, 0, 0);
-                      
-                      const uniqueDays = [];
-                      const processedDates = new Set();
-                      
+      
                       // Process forecast items and group by day
                       const dayGroups = new Map();
                       
