@@ -1,14 +1,13 @@
 'use client';
 
 import { WeatherData } from '@/types/weather';
-import { weatherService } from '@/services/weatherService';
 
 interface WeatherCardProps {
   weather: WeatherData;
   unit: 'celsius' | 'fahrenheit';
 }
 
-export default function WeatherCard({ weather, unit }: WeatherCardProps) {
+export default function WeatherCard({ weather }: WeatherCardProps) {
   const formatTime = (timestamp: number) => {
     return new Date(timestamp * 1000).toLocaleTimeString('en-US', {
       hour: '2-digit',
