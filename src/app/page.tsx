@@ -59,11 +59,13 @@ export default function Home() {
       
       setWeather(weatherData);
       setForecast(forecastData);
-      setSearchValue(weatherData.name); // Update search value with detected city
+      // Only update search value after successful location detection
+      setSearchValue(weatherData.name);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch weather data');
-      // Fallback to a default city if geolocation fails
+      // Fallback to a default city if geolocation fails, but keep search bar empty
       await fetchWeatherByCity('London');
+      setSearchValue(''); // Keep search bar empty on geolocation failure
     } finally {
       setLoading(false);
     }
@@ -112,7 +114,7 @@ export default function Home() {
           </p>
           
           {/* Search and Temperature Toggle - Better centering for mobile */}
-          <div className="flex flex-col items-center justify-center gap-4 mb-6 w-full relative">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6 w-full">
             <div className="w-full max-w-md">
               <SearchBar 
                 onSearch={handleSearch} 
@@ -121,7 +123,7 @@ export default function Home() {
                 onChange={setSearchValue}
               />
             </div>
-            <div className="flex justify-center absolute right-0">
+            <div className="flex-shrink-0">
               <TemperatureToggle 
                 unit={unit} 
                 onToggle={handleTemperatureToggle} 
@@ -155,32 +157,53 @@ export default function Home() {
                 <div className="glass rounded-3xl p-6 text-white text-center">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-medium text-white/80">Next 7 Days</h3>
-                    <div className="text-xs text-white/50">Extended forecast</div>
                   </div>
                   <div className="space-y-3">
                     {(() => {
                       // Get unique days starting from tomorrow
                       const today = new Date();
-                      today.setHours(0, 0, 0, 0);
+                      const tomorrow = new Date(today);
+                      tomorrow.setDate(today.getDate() + 1);
+                      tomorrow.setHours(0, 0, 0, 0);
                       
                       const uniqueDays = [];
                       const processedDates = new Set();
+                      
+                      // Process forecast items and group by day
+                      const dayGroups = new Map();
                       
                       for (const item of forecast.list) {
                         const itemDate = new Date(item.dt * 1000);
                         const dateKey = itemDate.toDateString();
                         
-                        // Skip today and already processed dates
-                        if (itemDate >= today && !processedDates.has(dateKey)) {
-                          processedDates.add(dateKey);
-                          uniqueDays.push(item);
+                        if (!dayGroups.has(dateKey)) {
+                          dayGroups.set(dateKey, []);
+                        }
+                        dayGroups.get(dateKey).push(item);
+                      }
+                      
+                      // Get tomorrow and the next 6 days (total 7 days)
+                      const daysToShow = [];
+                      for (let i = 0; i < 7; i++) {
+                        const targetDate = new Date(tomorrow);
+                        targetDate.setDate(tomorrow.getDate() + i);
+                        const dateKey = targetDate.toDateString();
+                        
+                        if (dayGroups.has(dateKey)) {
+                          // Use the first item of the day (or you could average temperatures)
+                          const dayItems = dayGroups.get(dateKey);
+                          // Find the item closest to noon for better representation
+                          const noonItem = dayItems.reduce((closest: ForecastData['list'][0], current: ForecastData['list'][0]) => {
+                            const currentHour = new Date(current.dt * 1000).getHours();
+                            const closestHour = new Date(closest.dt * 1000).getHours();
+                            return Math.abs(currentHour - 12) < Math.abs(closestHour - 12) ? current : closest;
+                          });
                           
-                          // Stop once we have 7 days
-                          if (uniqueDays.length >= 7) break;
+                          daysToShow.push({ item: noonItem, dayIndex: i });
                         }
                       }
                       
-                      return uniqueDays.map((item, index) => {
+                      return daysToShow.map(({ item, dayIndex }, index) => {
                         const convertTemp = (temp: number) => {
                           if (unit === 'fahrenheit') {
                             return Math.round((temp * 9/5) + 32);
@@ -190,17 +213,21 @@ export default function Home() {
                         const tempSymbol = unit === 'fahrenheit' ? '°F' : '°C';
                         const itemDate = new Date(item.dt * 1000);
                         
+                        const getDayLabel = (dayIndex: number) => {
+                          if (dayIndex === 0) return 'Tomorrow';
+                          return itemDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                        };
+                        
                         return (
                           <div key={index} className="flex justify-between items-center glass-dark rounded-xl p-3 hover:bg-white/5 transition-colors">
-                            <span className="text-sm text-white/70 font-medium">
-                              {index === 0 ? 'Tomorrow' : 
-                               itemDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                            <span className="text-sm text-white/70 font-medium min-w-[100px]">
+                              {getDayLabel(dayIndex)}
                             </span>
                             <div className="flex items-center space-x-3">
                               <span className="text-lg">
                                 {item.weather[0].icon.includes('d') ? '☀️' : '🌙'}
                               </span>
-                              <span className="text-sm font-medium min-w-[60px] text-right">
+                              <span className="text-sm font-medium text-right min-w-[80px]">
                                 {convertTemp(item.main.temp_max)}{tempSymbol}/{convertTemp(item.main.temp_min)}{tempSymbol}
                               </span>
                             </div>
