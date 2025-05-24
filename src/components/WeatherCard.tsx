@@ -1,13 +1,13 @@
 'use client';
 
-import { WeatherData } from '@/types/weather';
+import { WeatherData, TemperatureUnit } from '@/types/weather';
 
 interface WeatherCardProps {
   weather: WeatherData;
-  unit: 'celsius' | 'fahrenheit';
+  unit: TemperatureUnit;
 }
 
-export default function WeatherCard({ weather }: WeatherCardProps) {
+export default function WeatherCard({ weather, unit }: WeatherCardProps) {
   const formatTime = (timestamp: number) => {
     return new Date(timestamp * 1000).toLocaleTimeString('en-US', {
       hour: '2-digit',
@@ -23,6 +23,17 @@ export default function WeatherCard({ weather }: WeatherCardProps) {
       month: 'short',
       year: 'numeric',
     });
+  };
+
+  const convertTemperature = (temp: number): number => {
+    if (unit === 'fahrenheit') {
+      return Math.round((temp * 9/5) + 32);
+    }
+    return Math.round(temp);
+  };
+
+  const getTemperatureSymbol = (): string => {
+    return unit === 'fahrenheit' ? '°F' : '°C';
   };
 
   const getWeatherIcon = (iconCode: string) => {
@@ -54,8 +65,9 @@ export default function WeatherCard({ weather }: WeatherCardProps) {
           </p>
         </div>
         <div className="text-right">
-          <p className="text-sm text-white/60">°C</p>
-          <p className="text-sm text-white/60">°F</p>
+          <p className="text-lg font-medium text-white">
+            {getTemperatureSymbol()}
+          </p>
         </div>
       </div>
 
@@ -65,7 +77,7 @@ export default function WeatherCard({ weather }: WeatherCardProps) {
           <span className="text-6xl mr-4">{getWeatherIcon(weather.weather[0].icon)}</span>
           <div>
             <div className="text-6xl font-light">
-              {Math.round(weather.main.temp)}°
+              {convertTemperature(weather.main.temp)}{getTemperatureSymbol()}
             </div>
             <p className="text-lg text-white/80 capitalize">
               {weather.weather[0].description}
@@ -73,7 +85,7 @@ export default function WeatherCard({ weather }: WeatherCardProps) {
           </div>
         </div>
         <p className="text-sm text-white/60">
-          L: {Math.round(weather.main.temp_min)}° H: {Math.round(weather.main.temp_max)}°
+          L: {convertTemperature(weather.main.temp_min)}{getTemperatureSymbol()} H: {convertTemperature(weather.main.temp_max)}{getTemperatureSymbol()}
         </p>
       </div>
 
@@ -86,7 +98,7 @@ export default function WeatherCard({ weather }: WeatherCardProps) {
           </div>
           <p className="text-2xl font-medium">{weather.main.humidity}%</p>
           <p className="text-xs text-white/50">
-            The dew point is {Math.round(weather.main.feels_like)}° right now.
+            The dew point is {convertTemperature(weather.main.feels_like)}{getTemperatureSymbol()} right now.
           </p>
         </div>
 
@@ -97,7 +109,7 @@ export default function WeatherCard({ weather }: WeatherCardProps) {
           </div>
           <p className="text-2xl font-medium">{Math.round(weather.visibility / 1000)} km</p>
           <p className="text-xs text-white/50">
-            Haze is significantly affecting visibility.
+            {weather.visibility >= 10000 ? 'Excellent visibility' : 'Haze is affecting visibility.'}
           </p>
         </div>
 
@@ -106,9 +118,12 @@ export default function WeatherCard({ weather }: WeatherCardProps) {
             <span className="text-lg mr-2">🌡️</span>
             <span className="text-sm text-white/60">Feels Like</span>
           </div>
-          <p className="text-2xl font-medium">{Math.round(weather.main.feels_like)}°</p>
+          <p className="text-2xl font-medium">{convertTemperature(weather.main.feels_like)}{getTemperatureSymbol()}</p>
           <p className="text-xs text-white/50">
-            Feel like humidity is making it feel hotter.
+            {weather.main.feels_like > weather.main.temp 
+              ? 'Humidity makes it feel hotter.' 
+              : 'Wind makes it feel cooler.'
+            }
           </p>
         </div>
 
@@ -119,7 +134,8 @@ export default function WeatherCard({ weather }: WeatherCardProps) {
           </div>
           <p className="text-2xl font-medium">{Math.round(weather.wind.speed)} m/s</p>
           <p className="text-xs text-white/50">
-            Wind direction: {weather.wind.deg}°
+            {weather.wind.speed < 2 ? 'Light breeze' :
+             weather.wind.speed < 6 ? 'Moderate wind' : 'Strong wind'}
           </p>
         </div>
       </div>
