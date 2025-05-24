@@ -15,10 +15,26 @@ interface CityWeather {
   loading: boolean;
 }
 
-const popularCities = ['New York', 'Tokyo', 'Paris', 'Sydney', 'Dubai', 'London'];
+const allPopularCities = [
+  'New York', 'Tokyo', 'Paris', 'Sydney', 'Dubai', 'London', 'Berlin', 'Madrid',
+  'Rome', 'Amsterdam', 'Stockholm', 'Oslo', 'Copenhagen', 'Helsinki', 'Vienna',
+  'Prague', 'Budapest', 'Warsaw', 'Zurich', 'Geneva', 'Miami', 'Las Vegas',
+  'San Francisco', 'Seattle', 'Boston', 'Philadelphia', 'Atlanta', 'Dallas',
+  'Houston', 'Phoenix', 'Denver', 'Barcelona', 'Munich', 'Milan', 'Naples',
+  'Mumbai', 'Delhi', 'Bangkok', 'Manila', 'Singapore', 'Hong Kong', 'Seoul',
+  'Istanbul', 'Tel Aviv', 'Cairo', 'Cape Town', 'São Paulo', 'Rio de Janeiro',
+  'Buenos Aires', 'Santiago', 'Melbourne', 'Brisbane', 'Perth'
+];
+
+// Function to get random cities
+const getRandomCities = (count: number = 3): string[] => {
+  const shuffled = [...allPopularCities].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, count);
+};
 
 export default function OtherCities({ onCityClick, unit }: OtherCitiesProps) {
   const [citiesWeather, setCitiesWeather] = useState<CityWeather[]>([]);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const convertTemperature = (temp: number): number => {
     if (unit === 'fahrenheit') {
@@ -46,9 +62,12 @@ export default function OtherCities({ onCityClick, unit }: OtherCitiesProps) {
     return iconMap[iconCode] || '🌤️';
   };
 
-  useEffect(() => {
+  const fetchCitiesWeather = async () => {
+    // Get random cities each time
+    const randomCities = getRandomCities(3);
+    
     // Initialize cities with loading state
-    const initialCities: CityWeather[] = popularCities.slice(0, 3).map(city => ({
+    const initialCities: CityWeather[] = randomCities.map(city => ({
       name: city,
       weather: null,
       loading: true
@@ -56,23 +75,24 @@ export default function OtherCities({ onCityClick, unit }: OtherCitiesProps) {
     setCitiesWeather(initialCities);
 
     // Fetch weather for each city
-    const fetchCitiesWeather = async () => {
-      const updatedCities = await Promise.all(
-        initialCities.map(async (cityWeather) => {
-          try {
-            const weather = await weatherService.getCurrentWeatherByCity(cityWeather.name);
-            return { ...cityWeather, weather, loading: false };
-          } catch (error) {
-            console.error(`Failed to fetch weather for ${cityWeather.name}:`, error);
-            return { ...cityWeather, loading: false };
-          }
-        })
-      );
-      setCitiesWeather(updatedCities);
-    };
+    const updatedCities = await Promise.all(
+      initialCities.map(async (cityWeather) => {
+        try {
+          const weather = await weatherService.getCurrentWeatherByCity(cityWeather.name);
+          return { ...cityWeather, weather, loading: false };
+        } catch (error) {
+          console.error(`Failed to fetch weather for ${cityWeather.name}:`, error);
+          return { ...cityWeather, loading: false };
+        }
+      })
+    );
+    setCitiesWeather(updatedCities);
+  };
 
+  // Fetch cities on component mount and when refresh key changes
+  useEffect(() => {
     fetchCitiesWeather();
-  }, []);
+  }, [refreshKey]);
 
   // Update temperature display when unit changes
   useEffect(() => {
@@ -85,6 +105,10 @@ export default function OtherCities({ onCityClick, unit }: OtherCitiesProps) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleRefresh = () => {
+    setRefreshKey(prev => prev + 1);
+  };
+
   return (
     <div className="glass rounded-3xl p-6 text-white text-center">
       <div className="flex items-center justify-between mb-4">
@@ -92,9 +116,9 @@ export default function OtherCities({ onCityClick, unit }: OtherCitiesProps) {
         <div className="text-xs text-white/50">Live weather</div>
       </div>
       <div className="space-y-4">
-        {citiesWeather.map((cityWeather, index) => (
+        {citiesWeather.map((cityWeather) => (
           <div 
-            key={index} 
+            key={`${cityWeather.name}-${refreshKey}`} 
             className="glass-dark rounded-2xl p-4 cursor-pointer hover:bg-white/10 transition-all duration-300 transform hover:scale-[1.02] group"
             onClick={() => handleCityClick(cityWeather.name)}
           >
@@ -151,10 +175,11 @@ export default function OtherCities({ onCityClick, unit }: OtherCitiesProps) {
         
         {/* Refresh button */}
         <button
-          onClick={() => window.location.reload()}
-          className="w-full mt-4 py-2 text-xs text-white/50 hover:text-white/70 transition-colors"
+          onClick={handleRefresh}
+          className="w-full mt-4 py-2 text-xs text-white/50 hover:text-white/70 transition-colors flex items-center justify-center space-x-2 hover:bg-white/5 rounded-xl"
         >
-          🔄 Refresh all cities
+          <span>🔄</span>
+          <span>Show different cities</span>
         </button>
       </div>
     </div>

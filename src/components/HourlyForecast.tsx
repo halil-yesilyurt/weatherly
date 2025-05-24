@@ -42,8 +42,19 @@ export default function HourlyForecast({ forecast, unit }: HourlyForecastProps) 
     return unit === 'fahrenheit' ? '°F' : '°C';
   };
 
-  // Get next 24 hours of forecast (3-hour intervals)
-  const hourlyData = forecast.list.slice(0, 8);
+  // Get next 24 hours of forecast starting from next hour
+  const now = new Date();
+  const nextHour = new Date(now);
+  nextHour.setHours(now.getHours() + 1, 0, 0, 0);
+  
+  // Filter forecast data to get items starting from next hour
+  const filteredData = forecast.list.filter(item => {
+    const itemTime = new Date(item.dt * 1000);
+    return itemTime >= nextHour;
+  });
+  
+  // Take first 8 items (24 hours in 3-hour intervals)
+  const hourlyData = filteredData.slice(0, 8);
 
   // Calculate temperature range for visual scaling
   const temps = hourlyData.map(item => item.main.temp);
@@ -70,24 +81,24 @@ export default function HourlyForecast({ forecast, unit }: HourlyForecastProps) 
         <div className="flex overflow-x-auto space-x-1 pb-2 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
           {hourlyData.map((item, index) => {
             const tempHeight = getTemperatureBarHeight(item.main.temp);
-            const isNow = index === 0;
             const precipitationChance = Math.round(item.pop * 100);
+            const isNextHour = index === 0;
             
             return (
               <div
                 key={index}
                 className={`flex-shrink-0 relative group ${
-                  isNow ? 'bg-white/10' : 'hover:bg-white/5'
+                  isNextHour ? 'bg-white/10' : 'hover:bg-white/5'
                 } rounded-2xl p-3 min-w-[100px] transition-all duration-300 border ${
-                  isNow ? 'border-white/30' : 'border-transparent'
+                  isNextHour ? 'border-white/30' : 'border-transparent'
                 }`}
               >
                 {/* Time */}
                 <div className="text-center mb-3">
                   <p className={`text-sm font-medium ${
-                    isNow ? 'text-white' : 'text-white/70'
+                    isNextHour ? 'text-white' : 'text-white/70'
                   }`}>
-                    {isNow ? 'Now' : formatHour(item.dt)}
+                    {isNextHour ? 'Next' : formatHour(item.dt)}
                   </p>
                 </div>
 
@@ -111,7 +122,7 @@ export default function HourlyForecast({ forecast, unit }: HourlyForecastProps) 
                     ></div>
                   </div>
                   <p className={`text-lg font-bold ${
-                    isNow ? 'text-white' : 'text-white/90'
+                    isNextHour ? 'text-white' : 'text-white/90'
                   }`}>
                     {convertTemperature(item.main.temp)}{getTemperatureSymbol()}
                   </p>
@@ -143,8 +154,8 @@ export default function HourlyForecast({ forecast, unit }: HourlyForecastProps) 
                   </div>
                 </div>
 
-                {/* "Now" indicator */}
-                {isNow && (
+                {/* "Next" indicator */}
+                {isNextHour && (
                   <div className="absolute -top-1 left-1/2 transform -translate-x-1/2">
                     <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
                   </div>
