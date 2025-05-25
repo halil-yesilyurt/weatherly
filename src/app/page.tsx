@@ -217,7 +217,7 @@ export default function Home() {
                         
                         return (
                           <div key={index} className="flex justify-between items-center glass-dark rounded-xl p-3 hover:bg-white/5 transition-colors">
-                            <span className="text-sm text-white/70 font-medium min-w-[100px]">
+                            <span className="text-sm text-white/70 font-medium">
                               {getDayLabel(dayIndex)}
                             </span>
                             <div className="flex items-center space-x-3">

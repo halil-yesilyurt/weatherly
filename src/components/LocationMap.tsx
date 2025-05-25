@@ -50,10 +50,10 @@ export default function LocationMap({ weather }: LocationMapProps) {
         <h3 className="text-lg font-medium text-white/80">Location Map</h3>
       </div>
       
-      <div className="space-y-4 h-full flex flex-col">
+      <div className="space-y-4 flex flex-col">
         {/* Interactive Map */}
         {locationInfo ? (
-          <div className="relative glass-dark rounded-2xl overflow-hidden flex-1 min-h-[250px] max-h-[300px]">
+          <div className="relative glass-dark rounded-2xl overflow-hidden flex-1 min-h-[200px] max-h-[230px]">
             {!isMapLoaded && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/20 z-10">
                 <div className="text-center">
@@ -76,7 +76,7 @@ export default function LocationMap({ weather }: LocationMapProps) {
             ></iframe>
             
             {/* Map overlay with location info - positioned to not cover controls */}
-            <div className="absolute top-2 left-2 bg-black/70 backdrop-blur-sm rounded-lg p-2 max-w-[180px]">
+            <div className="absolute top-2 right-2 bg-black/70 backdrop-blur-sm rounded-lg p-2 max-w-[180px]">
               <p className="text-xs text-white font-medium truncate">{locationInfo.name}, {locationInfo.country}</p>
               <p className="text-xs text-white/70 mt-0.5">{locationInfo.lat}°, {locationInfo.lon}°</p>
             </div>
@@ -120,7 +120,7 @@ export default function LocationMap({ weather }: LocationMapProps) {
         {locationInfo && (
           <div className="space-y-3 flex-shrink-0">
             <div className="grid grid-cols-2 gap-3">
-              <div className="glass-dark rounded-xl p-3">
+              <div className="glass-dark rounded-xl p-2">
                 <div className="flex items-center space-x-2 mb-1">
                   <span className="text-lg">🌍</span>
                   <span className="text-xs text-white/60">Coordinates</span>
@@ -130,7 +130,7 @@ export default function LocationMap({ weather }: LocationMapProps) {
                 </p>
               </div>
 
-              <div className="glass-dark rounded-xl p-3">
+              <div className="glass-dark rounded-xl p-2">
                 <div className="flex items-center space-x-2 mb-1">
                   <span className="text-lg">🏙️</span>
                   <span className="text-xs text-white/60">Country</span>

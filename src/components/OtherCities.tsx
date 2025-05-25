@@ -169,7 +169,7 @@ export default function OtherCities({ onCityClick, unit }: OtherCitiesProps) {
           {citiesWeather.map((cityWeather) => (
             <div 
               key={`${cityWeather.name}-${refreshKey}`} 
-              className="glass-dark rounded-2xl p-4 cursor-pointer hover:bg-white/10 transition-all duration-300 transform hover:scale-[1.02] group h-[70px] flex items-center relative overflow-hidden"
+              className="glass-dark rounded-2xl p-4 cursor-pointer hover:bg-white/10 transition-all duration-300 transform hover:scale-[1.02] group h-[90px] flex items-center relative overflow-hidden"
               onClick={() => handleCityClick(cityWeather.name)}
             >
               <div className="flex justify-between items-center w-full relative z-10">
@@ -213,7 +213,7 @@ export default function OtherCities({ onCityClick, unit }: OtherCitiesProps) {
 
               {/* Additional info on hover - positioned at bottom without covering main content */}
               {cityWeather.weather && (
-                <div className="absolute left-4 right-4 bottom-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/60 backdrop-blur-sm rounded-lg px-3 py-1 z-20">
+                <div className="absolute left-4 right-4 bottom-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/60 backdrop-blur-sm rounded-lg px-3 py-1 z-20 w-[50%] mx-auto">
                   <div className="flex justify-between text-xs text-white/80">
                     <span>Feels {convertTemperature(cityWeather.weather.main.feels_like)}{getTemperatureSymbol()}</span>
                     <span>💧 {cityWeather.weather.main.humidity}%</span>

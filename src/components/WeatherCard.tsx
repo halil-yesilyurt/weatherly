@@ -64,11 +64,6 @@ export default function WeatherCard({ weather, unit }: WeatherCardProps) {
             {formatDate(weather.dt)}
           </p>
         </div>
-        <div className="text-right">
-          <p className="text-lg font-medium text-white">
-            {getTemperatureSymbol()}
-          </p>
-        </div>
       </div>
 
       {/* Main Temperature */}

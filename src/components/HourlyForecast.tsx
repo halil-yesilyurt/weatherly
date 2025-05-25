@@ -147,7 +147,7 @@ export default function HourlyForecast({ forecast, unit }: HourlyForecastProps) 
                 )}
 
                 {/* Wind Speed Indicator */}
-                <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                <div className="absolute -bottom-2 right-0 left-0 flex justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10">
                   <div className="text-xs text-white/70 bg-black/50 backdrop-blur-sm rounded-md px-1.5 py-0.5 whitespace-nowrap">
                     🌬 {Math.round(item.wind.speed)}m/s
                   </div>
