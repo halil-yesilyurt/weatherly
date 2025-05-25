@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { WeatherData, ForecastData, TemperatureUnit } from '@/types/weather';
 import { weatherService } from '@/services/weatherService';
 import SearchBar from '@/components/SearchBar';
@@ -107,13 +108,13 @@ export default function Home() {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <a href="/" className="transition-transform hover:scale-105">
+            <Link href="/" className="transition-transform hover:scale-105">
               <img 
                 src="/weatherly-logo.png" 
                 alt="Weatherly Logo" 
                 className="h-16 md:h-20 w-auto"
               />
-            </a>
+            </Link>
           </div>
           <p className="font-caveat text-white/60 text-2xl mb-8">
             beautiful weather, at a glance
