@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { WeatherData, ForecastData, TemperatureUnit } from '@/types/weather';
 import { weatherService } from '@/services/weatherService';
 import SearchBar from '@/components/SearchBar';
@@ -108,11 +109,14 @@ export default function Home() {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <Link href="/" className="transition-transform hover:scale-105">
-              <img 
+            <Link href="/" className="transition-transform hover:scale-105 block">
+              <Image 
                 src="/weatherly-logo.png" 
                 alt="Weatherly Logo" 
+                width={300}
+                height={80}
                 className="h-16 md:h-20 w-auto"
+                priority
               />
             </Link>
           </div>
