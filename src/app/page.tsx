@@ -106,9 +106,15 @@ export default function Home() {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            ☁️ Weatherly
-          </h1>
+          <div className="flex justify-center mb-4">
+            <a href="/" className="transition-transform hover:scale-105">
+              <img 
+                src="/weatherly-logo.png" 
+                alt="Weatherly Logo" 
+                className="h-16 md:h-20 w-auto"
+              />
+            </a>
+          </div>
           <p className="font-caveat text-white/60 text-2xl mb-8">
             beautiful weather, at a glance
           </p>
@@ -152,7 +158,7 @@ export default function Home() {
               </div>
               
               {/* Additional Weather Info */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* 7-Day Forecast */}
                 <div className="glass rounded-3xl p-6 text-white text-center">
                   <div className="flex items-center justify-between mb-4">
