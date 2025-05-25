@@ -1,158 +1,227 @@
-# 🌤️ Weatherly - Beautiful Weather App
+# 🌤️ Weatherly - Advanced Weather Application
 
-A modern, responsive weather application built with Next.js, TypeScript, and Tailwind CSS. Get real-time weather data and forecasts with a beautiful, intuitive interface.
+A beautiful, responsive weather application built with Next.js, TypeScript, and Tailwind CSS. Features real-time weather data, interactive maps, intelligent city search, and a modern glass-morphism design.
 
-![Weatherly Preview](https://via.placeholder.com/800x400/1e1b4b/ffffff?text=Weatherly+Weather+App)
+<p align="center">
+    <img src="./public/screenshot-1.png" alt="weatherly main page" width="500"/>
+</p>
 
 ## ✨ Features
 
-- 🌍 **Geolocation Support** - Automatically detects your location
-- 🔍 **City Search** - Search weather for any city worldwide
-- 📊 **Detailed Weather Info** - Temperature, humidity, wind speed, visibility
-- ⏰ **Hourly Forecast** - 12-hour weather predictions
-- 📅 **7-Day Forecast** - Weekly weather outlook
-- 🎨 **Beautiful UI** - Modern glass-morphism design
-- 📱 **Responsive Design** - Works perfectly on all devices
-- ⚡ **Fast Performance** - Built with Next.js 15 and React 19
-- 🌙 **Dark Theme** - Elegant dark interface
+### 🔍 **Smart City Search**
 
-## 🚀 Tech Stack
+- **Worldwide autocomplete**: Search any city globally using OpenWeatherMap's geocoding API
+- **Intelligent suggestions**: Prioritizes major cities and exact matches
+- **Duplicate prevention**: Advanced deduplication for cleaner results
+- **Accessibility**: Full keyboard navigation and screen reader support
 
-- **Framework**: Next.js 15 with App Router
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **Icons**: Heroicons + Emojis
-- **API**: OpenWeatherMap API
-- **Deployment**: Vercel (recommended)
+### 🌡️ **Temperature Controls**
 
-## 📋 Prerequisites
+- **Toggle switch design**: Modern switch-style temperature converter
+- **Smooth transitions**: Visual feedback during unit conversion
+- **Universal clickability**: Click anywhere on the toggle to switch
 
-- Node.js 18+ 
+### 🗺️ **Interactive Location Map**
+
+- **Real embedded maps**: OpenStreetMap integration (no API key required)
+- **Location markers**: Precise positioning with city information
+- **Quick actions**: Direct Google Maps links and coordinate copying
+- **Responsive design**: Adapts to all screen sizes
+
+### 📊 **Comprehensive Weather Data**
+
+- **Current conditions**: Temperature, humidity, wind speed, visibility
+- **24-hour forecast**: Timeline view with visual temperature bars
+- **7-day forecast**: Extended weather predictions with proper alignment
+- **Popular cities**: Randomized global weather showcase
+
+### 🎨 **Modern UI/UX**
+
+- **Glass morphism**: Elegant transparent design elements
+- **Smooth animations**: Professional transitions and hover effects
+- **Responsive layout**: Optimized for mobile, tablet, and desktop
+- **Dark theme**: Beautiful gradient backgrounds
+
+### ♿ **Accessibility Features**
+
+- **ARIA labels**: Comprehensive screen reader support
+- **Keyboard navigation**: Full keyboard accessibility
+- **Focus management**: Proper focus indicators and management
+- **Semantic HTML**: Proper roles and markup structure
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 18+
 - npm or yarn
-- OpenWeatherMap API key (free)
+- OpenWeatherMap API key (optional - works with demo data)
 
-## 🛠️ Installation
+### Installation
 
 1. **Clone the repository**
+
    ```bash
-   git clone https://github.com/yourusername/weatherly.git
+   git clone https://github.com/halil-yesilyurt/weatherly.git
    cd weatherly
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    # or
    yarn install
    ```
 
-3. **Get your OpenWeatherMap API key**
-   - Visit [OpenWeatherMap](https://openweathermap.org/api)
-   - Sign up for a free account
-   - Generate your API key
+3. **Environment setup** (Optional)
 
-4. **Set up environment variables**
-   Create a `.env.local` file in the root directory:
+   ```bash
+   cp .env.example .env.local
+   ```
+
+   Add your OpenWeatherMap API key:
+
    ```env
    NEXT_PUBLIC_OPENWEATHER_API_KEY=your_api_key_here
    ```
 
-5. **Run the development server**
+4. **Run development server**
+
    ```bash
    npm run dev
    # or
    yarn dev
    ```
 
-6. **Open your browser**
+5. **Open your browser**
    Navigate to [http://localhost:3000](http://localhost:3000)
 
-## 🌐 Deployment
+## 🛠️ Technical Stack
 
-### Deploy to Vercel (Recommended)
-
-1. Push your code to GitHub
-2. Connect your repository to [Vercel](https://vercel.com)
-3. Add your environment variable in Vercel dashboard
-4. Deploy!
-
-### Deploy to Netlify
-
-1. Build the project: `npm run build`
-2. Upload the `out` folder to Netlify
-3. Set environment variables in Netlify dashboard
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **Icons**: Heroicons
+- **API**: OpenWeatherMap (Weather + Geocoding)
+- **Maps**: OpenStreetMap
+- **Fonts**: Google Fonts (Caveat, Montserrat)
 
 ## 📁 Project Structure
 
 ```
-weatherly/
-├── src/
-│   ├── app/
-│   │   ├── globals.css
-│   │   ├── layout.tsx
-│   │   └── page.tsx
-│   ├── components/
-│   │   ├── ErrorMessage.tsx
-│   │   ├── HourlyForecast.tsx
-│   │   ├── LoadingSpinner.tsx
-│   │   ├── SearchBar.tsx
-│   │   └── WeatherCard.tsx
-│   ├── services/
-│   │   └── weatherService.ts
-│   └── types/
-│       └── weather.ts
-├── public/
-├── package.json
-├── tailwind.config.ts
-├── tsconfig.json
-└── README.md
+src/
+├── app/                   # Next.js app directory
+│   ├── page.tsx           # Main weather page
+│   ├── layout.tsx         # Root layout
+│   └── globals.css        # Global styles
+├── components/            # React components
+│   ├── SearchBar.tsx      # City search with autocomplete
+│   ├── WeatherCard.tsx    # Current weather display
+│   ├── HourlyForecast.tsx # 24-hour timeline forecast
+│   ├── TemperatureToggle.tsx # C°/F° switch
+│   ├── OtherCities.tsx    # Popular cities showcase
+│   ├── LocationMap.tsx    # Interactive map component
+│   ├── LoadingSpinner.tsx # Loading states
+│   ├── ErrorMessage.tsx   # Error handling
+│   └── DemoNotice.tsx     # Demo mode indicator
+├── services/              # API services
+│   ├── weatherService.ts  # Weather API integration
+│   └── demoData.ts        # Fallback demo data
+├── hooks/                 # Custom React hooks
+│   └── useDebounce.ts     # Debounced search input
+├── data/                  # Static data
+│   └── cities.ts          # Fallback city list
+└── types/                 # TypeScript definitions
+    └── weather.ts         # Weather data types
 ```
-
-## 🎯 Usage
-
-1. **Automatic Location**: Allow location access for automatic weather detection
-2. **Search Cities**: Use the search bar to find weather for any city
-3. **View Details**: Explore detailed weather information and forecasts
-4. **Responsive**: Use on any device - mobile, tablet, or desktop
 
 ## 🔧 Configuration
 
-### API Configuration
-The app uses OpenWeatherMap API with the following endpoints:
-- Current Weather: `/weather`
-- 5-day Forecast: `/forecast`
+### API Keys
+
+The application works in demo mode without an API key, but for full functionality:
+
+1. Get a free API key from [OpenWeatherMap](https://openweathermap.org/api)
+2. Add it to your `.env.local` file
+3. Restart the development server
 
 ### Customization
-- Modify colors in `tailwind.config.ts`
-- Update glass effects in `globals.css`
-- Add new weather metrics in components
+
+- **Colors**: Modify Tailwind classes in components
+- **Animations**: Adjust transition durations in CSS
+- **Layout**: Customize grid layouts in main page
+- **Cities**: Add more cities in `data/cities.ts`
+
+## 🌟 Key Features Explained
+
+### Smart Autocomplete System
+
+- Debounced search (300ms) for optimal performance
+- Shows suggestions only when user is actively typing
+- Prevents unwanted dropdowns when clicking popular cities
+- Handles edge cases and duplicate results
+
+### Responsive Design
+
+- Mobile-first approach with progressive enhancement
+- Adaptive layouts for different screen sizes
+- Touch-friendly interactions on mobile devices
+- Optimal typography scaling
+
+### Performance Optimizations
+
+- Efficient re-rendering with proper React hooks
+- Debounced API calls to prevent excessive requests
+- Lazy loading for maps and images
+- Optimized bundle size with tree shaking
+
+### Error Handling
+
+- Graceful fallbacks for API failures
+- User-friendly error messages
+- Demo mode when API is unavailable
+- Network timeout handling
+
+## 🧪 Testing
+
+```bash
+# Run TypeScript checks
+npm run type-check
+
+# Run ESLint
+npm run lint
+
+# Run all checks
+npm run build
+```
+
+## 📱 Browser Support
+
+- Chrome 90+
+- Firefox 88+
+- Safari 14+
+- Edge 90+
+- Mobile browsers (iOS Safari, Chrome Mobile)
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Commit changes: `git commit -m 'Add amazing feature'`
-4. Push to branch: `git push origin feature/amazing-feature`
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📝 License
+## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## 🙏 Acknowledgements
 
-- [OpenWeatherMap](https://openweathermap.org/) for weather data
+- [OpenWeatherMap](https://openweathermap.org/) for weather data API
+- [OpenStreetMap](https://www.openstreetmap.org/) for map tiles
 - [Heroicons](https://heroicons.com/) for beautiful icons
-- [Tailwind CSS](https://tailwindcss.com/) for styling
-- [Next.js](https://nextjs.org/) for the framework
+- [Tailwind CSS](https://tailwindcss.com/) for utility-first styling
+- [Next.js](https://nextjs.org/) for the React framework
 
-## 📞 Support
-
-If you have any questions or need help, please:
-- Open an issue on GitHub
-- Check the [documentation](https://github.com/yourusername/weatherly/wiki)
-- Contact the maintainers
-
----
-
-Made with ❤️ by [Your Name](https://github.com/yourusername)
+Built with ❤️ using modern web technologies. Enjoy exploring the weather around the world! 🌍
