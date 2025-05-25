@@ -3,7 +3,7 @@
 A beautiful, responsive weather application built with Next.js, TypeScript, and Tailwind CSS. Features real-time weather data, interactive maps, intelligent city search, and a modern glass-morphism design.
 
 <p align="center">
-    <img src="./public/screenshot-1.png" alt="weatherly main page" width="500"/>
+    <img src="./public/screenshot-1.png" alt="weatherly main page" width="600"/>
 </p>
 
 ## ✨ Features
