@@ -214,7 +214,8 @@ footer a {color:var(--accent)}
 
 /* Responsive containment: grid items must shrink instead of expanding the viewport. */
 .weatherly {width:100%;max-width:100%;overflow-x:clip;font-family:var(--font-weatherly),system-ui,sans-serif}
-.weatherly .shell,.weatherly .dashboard,.weatherly .panel,.weatherly .intro,.weatherly .location-search,.weatherly .search-wrap {min-width:0;max-width:100%}
+.weatherly .shell {width:100%;max-width:1260px;min-width:0;margin-inline:auto}
+.weatherly .dashboard,.weatherly .panel,.weatherly .intro,.weatherly .location-search,.weatherly .search-wrap {min-width:0;max-width:100%}
 .weatherly .dashboard {grid-template-columns:minmax(0,1.17fr) minmax(0,1fr)}
 .weatherly .dashboard > * {min-width:0}
 .weatherly .intro {position:relative;z-index:50;isolation:isolate}
