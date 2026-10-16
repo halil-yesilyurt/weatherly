@@ -149,7 +149,7 @@ export default function Home() {
         {error && <div className="error-banner" role="alert">{error} <button onClick={()=>loadWeather(city)}>Retry</button></div>}
         {loading && !weather && <div className="dashboard skeleton-dashboard" role="status" aria-label="Loading forecast"><div className="hero panel skeleton-block"/><div className="details panel skeleton-block"/><div className="hourly panel skeleton-block"/><div className="weekly panel skeleton-block"/></div>}
         {weather && <div className={loading?'dashboard updating':'dashboard'}>
-          <div className="hero panel">
+          <div className={"hero panel weather-" + (weather.weather[0].main.toLowerCase().replace(/[^a-z]/g, "")) + (weather.weather[0].icon.endsWith("n")?" is-night":"")}>
             <div className="hero-heading">
               <div><p className="eyebrow">CURRENT WEATHER</p><h2>{city.name}{city.country?', '+city.country:''}</h2><p className="date">{new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}</p></div>
               <div className="hero-controls"><button className="favorite-button" onClick={share} aria-label="Copy shareable city link" title="Share this city">{copied?'✓':'↗'}</button><button className={'favorite-button '+(currentFavorite?'saved':'')} onClick={toggleFavorite} aria-label={currentFavorite?'Remove favorite city':'Add favorite city'} title={currentFavorite?'Remove from favorites':'Save city'}>{currentFavorite?'★':'☆'}</button></div>
