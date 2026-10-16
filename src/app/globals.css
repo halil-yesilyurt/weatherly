@@ -284,3 +284,5 @@ footer a {color:var(--accent)}
  .weatherly .big-temp {font-size:65px}
  .weatherly .curve-heading {flex-wrap:wrap}
 }
+
+@media (min-width:421px) and (max-width:570px) {.weatherly .location-button {min-width:48px;width:48px;padding:0}.weatherly .location-button span {display:none}}
