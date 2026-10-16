@@ -347,3 +347,33 @@ footer a {color:var(--accent)}
 .weatherly .site-footer a {color:var(--muted);text-decoration:none;transition:color .2s ease}
 .weatherly .site-footer a:hover {color:var(--accent)}
 @media(max-width:620px){.weatherly .site-footer {align-items:flex-start;flex-direction:column}.weatherly .site-footer nav {gap:12px 18px}}
+
+/* Scrollbars: subtle on the page, more visible for horizontally scrollable forecasts. */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: #a5b7cf #eef3f9;
+}
+html::-webkit-scrollbar { width: 10px; }
+html::-webkit-scrollbar-track { background: #eef3f9; }
+html::-webkit-scrollbar-thumb { background: #a5b7cf; border: 2px solid #eef3f9; border-radius: 999px; }
+html::-webkit-scrollbar-thumb:hover { background: #7995b8; }
+
+.weatherly .hourly-scroll,
+.weatherly .suggestions {
+  scrollbar-width: thin;
+  scrollbar-color: #a5b7cf var(--subtle);
+}
+.weatherly .hourly-scroll::-webkit-scrollbar { height: 8px; }
+.weatherly .suggestions::-webkit-scrollbar { width: 8px; }
+.weatherly .hourly-scroll::-webkit-scrollbar-track,
+.weatherly .suggestions::-webkit-scrollbar-track { background: var(--subtle); border-radius: 999px; }
+.weatherly .hourly-scroll::-webkit-scrollbar-thumb,
+.weatherly .suggestions::-webkit-scrollbar-thumb { background: #a5b7cf; border-radius: 999px; border: 2px solid var(--subtle); }
+.weatherly .hourly-scroll::-webkit-scrollbar-thumb:hover,
+.weatherly .suggestions::-webkit-scrollbar-thumb:hover { background: #7995b8; }
+.weatherly.dark-mode .hourly-scroll,
+.weatherly.dark-mode .suggestions { scrollbar-color: #58769a var(--subtle); }
+.weatherly.dark-mode .hourly-scroll::-webkit-scrollbar-thumb,
+.weatherly.dark-mode .suggestions::-webkit-scrollbar-thumb { background: #58769a; }
+.weatherly.dark-mode .hourly-scroll::-webkit-scrollbar-thumb:hover,
+.weatherly.dark-mode .suggestions::-webkit-scrollbar-thumb:hover { background: #80a0c5; }

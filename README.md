@@ -2,6 +2,8 @@
 
 A small, responsive weather app built as a frontend portfolio project.
 
+**Live demo:** https://weatherly-rho-weld.vercel.app
+
 **What it does:** Search cities worldwide, view live conditions, an hourly temperature chart and seven-day forecast, save favorites, switch between °C and °F, and explore random cities on the map. It includes light/dark themes, weather illustrations, and helpful loading and error states.
 
 ## Stack
