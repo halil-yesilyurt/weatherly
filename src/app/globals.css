@@ -404,3 +404,38 @@ html::-webkit-scrollbar-thumb:hover { background: #7995b8; }
 .weatherly.dark-mode .hourly-scroll::-webkit-scrollbar-thumb { background: var(--accent); }
 
 .weatherly .copy-confirmation { align-self: center; color: #fff; background: #0f366188; padding: 7px 9px; border-radius: 9px; font-size: 11px; white-space: nowrap; }
+
+/* Compact search actions outside the input, consistent across themes. */
+.weatherly .location-search { display:flex; align-items:center; gap:10px; }
+.weatherly .search-wrap { flex:1 1 auto; min-width:0; }
+.weatherly .search-submit,
+.weatherly .location-button {
+  height:52px; min-height:52px; border-radius:15px;
+  display:inline-flex; align-items:center; justify-content:center;
+  font-size:13px; font-weight:750;
+  flex:0 0 auto; transition:background .2s,border-color .2s,box-shadow .2s,transform .2s;
+}
+.weatherly .search-submit {
+  padding:0 19px; border:1px solid var(--ink); background:var(--ink); color:var(--surface);
+  opacity:1;
+}
+.weatherly .search-submit:hover:not(:disabled) { background:var(--accent); border-color:var(--accent); color:#fff; filter:none; transform:translateY(-1px); }
+.weatherly .search-submit:disabled { opacity:1; color:var(--muted); background:var(--subtle); border-color:var(--border); cursor:not-allowed; }
+.weatherly .location-button {
+  width:52px; min-width:52px; padding:0; border:1px solid var(--border);
+  background:var(--surface); color:var(--ink); box-shadow:none;
+}
+.weatherly .location-button:hover:not(:disabled) { background:var(--subtle); color:var(--accent); border-color:var(--accent); box-shadow:none; transform:translateY(-1px); }
+.weatherly .location-button .location-icon { width:20px; height:20px; }
+.weatherly.dark-mode .search-submit:not(:disabled) { background:#dbe9ff; border-color:#dbe9ff; color:#112239; }
+.weatherly.dark-mode .search-submit:hover:not(:disabled) { background:#accafa; border-color:#accafa; color:#102037; }
+.weatherly.dark-mode .search-submit:disabled { background:#263b54; border-color:#405772; color:#b6c9de; }
+.weatherly.dark-mode .location-button { background:var(--surface); color:#eaf3ff; border-color:#4b6686; }
+.weatherly.dark-mode .location-button:hover:not(:disabled) { background:#2a4564; color:#fff; border-color:#88b5ff; }
+@media(max-width:570px) {
+  .weatherly .location-search { gap:7px; }
+  .weatherly .search-submit { padding-inline:11px; }
+  .weatherly .location-button { min-width:44px; width:44px; height:48px; min-height:48px; }
+  .weatherly .search-submit { height:48px; min-height:48px; }
+  .weatherly .search-wrap form { height:48px; }
+}
