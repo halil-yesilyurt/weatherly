@@ -1,24 +1,22 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Manrope } from "next/font/google";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+const manrope = Manrope({ variable: '--font-weatherly', subsets: ['latin'], display: 'swap' });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const productionHost = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+const siteUrl = productionHost ? `https://${productionHost}` : 'http://localhost:3000';
 
 export const metadata: Metadata = {
-  title: "Weatherly - Beautiful Weather App",
-  description: "A clean and modern weather app providing real-time weather data and forecasts",
+  metadataBase: new URL(siteUrl),
+  title: "Weatherly | Your daily forecast",
+  description: "Explore accurate hourly and 7-day weather forecasts for cities around the world. Save favorite locations and personalize your experience.",
   keywords: "weather, forecast, temperature, climate, weatherly",
   authors: [{ name: "Weatherly Team" }],
-  viewport: "width=device-width, initial-scale=1",
+  openGraph: { title: "Weatherly — Weather, made simple", description: "Explore the weather around the world with a thoughtfully designed forecast experience.", type: "website", images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Weatherly weather forecast preview" }] },
+  twitter: { card: "summary_large_image", title: "Weatherly — Weather, made simple", images: ["/opengraph-image"] },
+  icons: { icon: [{ url: "/weatherly-icon.svg", type: "image/svg+xml" }], shortcut: "/weatherly-icon.svg", apple: "/weatherly-icon.svg" },
 };
 
 export default function RootLayout({
@@ -29,7 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 min-h-screen`}
+        className={`${manrope.variable} antialiased min-h-screen`}
       >
         {children}
         <Analytics />

@@ -54,7 +54,7 @@ export default function HourlyForecast({ forecast, unit }: HourlyForecastProps) 
   });
   
   // Take first 8 items (24 hours in 3-hour intervals)
-  const hourlyData = filteredData.slice(0, 8);
+  const hourlyData = filteredData.slice(0, 24);
 
   // Calculate temperature range for visual scaling
   const temps = hourlyData.map(item => item.main.temp);
