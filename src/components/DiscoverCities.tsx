@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import type { GeocodeResult } from '@/services/weatherService';
 import { weatherService } from '@/services/weatherService';
 import type { WeatherData, TemperatureUnit } from '@/types/weather';
+import WeatherGlyph from '@/components/WeatherGlyph';
 
 const places: GeocodeResult[] = [
   {name:'Kyoto', country:'JP',lat:35.0116,lon:135.7681},
@@ -24,7 +25,6 @@ function pickThree(exclude: string) {
   const sorted = places.filter(p=>p.name!==exclude).map(p=>({place:p,weight:Math.random()})).sort((a,b)=>a.weight-b.weight);
   return sorted.slice(0,3).map(({place})=>place);
 }
-const icons:Record<string,string>={'01':'☀️','02':'🌤️','03':'⛅','04':'☁️','09':'🌧️','10':'🌦️','11':'⛈️','13':'❄️','50':'🌫️'};
 export default function DiscoverCities({onSelect,unit,currentCity}:{onSelect:(city:GeocodeResult)=>void;unit:TemperatureUnit;currentCity:string}) {
   const [cards,setCards] = useState<CardState[]>([]);
   const [round,setRound] = useState(0);
@@ -49,7 +49,7 @@ export default function DiscoverCities({onSelect,unit,currentCity}:{onSelect:(ci
     <div className="section-title discover-heading"><div><p className="eyebrow">SOMEWHERE ELSE</p><h3>Around the world <span className="discover-star">✳</span></h3><p className="discover-caption">A little window into the weather elsewhere.</p></div><button type="button" className="refresh-button" disabled={refreshing} onClick={()=>{setRefreshing(true);setRound(n=>n+1)}}><span className={refreshing?'rotating':''} aria-hidden="true">↻</span> Shuffle cities</button></div>
     <div className="city-grid">{cards.map((card,index)=><button key={card.place.name} type="button" className={'city-tile '+(card.loading?'city-loading':'')} style={{animationDelay:index*110+'ms'}} onClick={()=>onSelect(card.place)}>
       <span className="city-tile-top"><span className="city-number">0{index+1} / WORLD</span><span aria-hidden="true">↗</span></span>
-      <span className="city-tile-main"><span><strong>{card.place.name}</strong><small>{card.place.country}</small></span><span className="city-icon">{card.loading?'':icons[card.weather?.weather[0]?.icon?.slice(0,2)??'']??'🌤️'}</span></span>
+      <span className="city-tile-main"><span><strong>{card.place.name}</strong><small>{card.place.country}</small></span><span className="city-icon">{card.loading?'':<WeatherGlyph code={card.weather?.weather[0]?.icon??'02d'} size={72}/>}</span></span>
       <span className="city-tile-foot">{card.loading?<span className="city-skeleton"/>:card.weather?<><span>{card.weather.weather[0].description}</span><strong>{Math.round(unit==='fahrenheit'?card.weather.main.temp*9/5+32:card.weather.main.temp)}°</strong></>:<span>Forecast unavailable</span>}</span>
     </button>)}</div>
   </section>;
