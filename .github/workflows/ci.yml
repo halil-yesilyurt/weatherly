@@ -16,3 +16,6 @@ jobs:
       - run: npm run type-check
       - run: npm run lint
       - run: npm run build
+      - name: Dependency audit (production dependencies)
+        run: npm audit --omit=dev --audit-level=high
+        continue-on-error: true
