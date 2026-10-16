@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { GeocodeResult } from '@/services/weatherService';
 import { weatherService } from '@/services/weatherService';
 import type { WeatherData, TemperatureUnit } from '@/types/weather';
@@ -29,24 +29,38 @@ export default function DiscoverCities({onSelect,unit,currentCity}:{onSelect:(ci
   const [cards,setCards] = useState<CardState[]>([]);
   const [round,setRound] = useState(0);
   const [refreshing,setRefreshing] = useState(false);
-  const refresh=useCallback(async (signal:AbortSignal)=>{
-    const selected=pickThree(currentCity);
-    setCards(selected.map(place=>({place,weather:null,loading:true})));
-    await Promise.all(selected.map(async place=>{
-      try {
-        const bundle=await weatherService.getWeatherBundleByCoords(place.lat,place.lon,signal);
-        if(!signal.aborted) setCards(prev=>prev.map(row=>row.place.name===place.name?{...row,loading:false,weather:bundle.weather}:row));
-      } catch {if(!signal.aborted) setCards(prev=>prev.map(row=>row.place.name===place.name?{...row,loading:false}:row));}
-    }));
-    if(!signal.aborted) setRefreshing(false);
-  },[currentCity]);
-  useEffect(()=>{
-    const controller=new AbortController();
-    void refresh(controller.signal);
-    return ()=>controller.abort();
-  },[round,refresh]);
+  const activeRefresh = useRef<AbortController | null>(null);
+  const refresh = useCallback(async (controller: AbortController) => {
+    const selected = pickThree(currentCity);
+    setCards(selected.map(place => ({place, weather: null, loading: true})));
+    setRefreshing(true);
+    // A stalled weather endpoint should never leave Shuffle cities spinning forever.
+    const timeout = window.setTimeout(() => controller.abort(), 10000);
+    try {
+      await Promise.all(selected.map(async place => {
+        try {
+          const bundle = await weatherService.getWeatherBundleByCoords(place.lat, place.lon, controller.signal);
+          if (!controller.signal.aborted) setCards(prev => prev.map(row => row.place.name === place.name ? {...row, loading: false, weather: bundle.weather} : row));
+        } catch {
+          if (!controller.signal.aborted) setCards(prev => prev.map(row => row.place.name === place.name ? {...row, loading: false} : row));
+        }
+      }));
+    } finally {
+      window.clearTimeout(timeout);
+      if (activeRefresh.current === controller) {
+        if (controller.signal.aborted) setCards(prev => prev.map(row => ({...row, loading: false})));
+        setRefreshing(false);
+      }
+    }
+  }, [currentCity]);
+  useEffect(() => {
+    const controller = new AbortController();
+    activeRefresh.current = controller;
+    void refresh(controller);
+    return () => { controller.abort(); if (activeRefresh.current === controller) activeRefresh.current = null; };
+  }, [round, refresh]);
   return <section className="discover panel">
-    <div className="section-title discover-heading"><div><p className="eyebrow">SOMEWHERE ELSE</p><h3>Around the world <span className="discover-star">✳</span></h3><p className="discover-caption">A little window into the weather elsewhere.</p></div><button type="button" className="refresh-button" disabled={refreshing} onClick={()=>{setRefreshing(true);setRound(n=>n+1)}}><span className={refreshing?'rotating':''} aria-hidden="true">↻</span> Shuffle cities</button></div>
+    <div className="section-title discover-heading"><div><p className="eyebrow">SOMEWHERE ELSE</p><h3>Around the world <span className="discover-star">✳</span></h3><p className="discover-caption">A little window into the weather elsewhere.</p></div><button type="button" className="refresh-button" disabled={refreshing} onClick={()=>setRound(n=>n+1)}><span className={refreshing?'rotating':''} aria-hidden="true">↻</span> Shuffle cities</button></div>
     <div className="city-grid">{cards.map((card,index)=><button key={card.place.name} type="button" className={'city-tile '+(card.loading?'city-loading':'')} style={{animationDelay:index*110+'ms'}} onClick={()=>onSelect(card.place)}>
       <span className="city-tile-top"><span className="city-number">0{index+1} / WORLD</span><span aria-hidden="true">↗</span></span>
       <span className="city-tile-main"><span><strong>{card.place.name}</strong><small>{card.place.country}</small></span><span className="city-icon">{card.loading?'':<WeatherGlyph code={card.weather?.weather[0]?.icon??'02d'} size={72}/>}</span></span>
