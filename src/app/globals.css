@@ -211,3 +211,76 @@ footer a {color:var(--accent)}
 .weatherly .hero.weather-thunderstorm {background:radial-gradient(circle at 80% 25%,#ac9fd933,transparent 38%),linear-gradient(118deg,#303b60,#59637f)}
 .weatherly .hero.weather-mist {background:linear-gradient(120deg,#687e90,#91a6b1)}
 .weatherly .hero.is-night {background:radial-gradient(circle at 83% 23%,#899aca45,transparent 36%),linear-gradient(125deg,#182841,#354e78)}
+
+/* Responsive containment: grid items must shrink instead of expanding the viewport. */
+.weatherly {width:100%;max-width:100%;overflow-x:clip;font-family:var(--font-weatherly),system-ui,sans-serif}
+.weatherly .shell,.weatherly .dashboard,.weatherly .panel,.weatherly .intro,.weatherly .location-search,.weatherly .search-wrap {min-width:0;max-width:100%}
+.weatherly .dashboard {grid-template-columns:minmax(0,1.17fr) minmax(0,1fr)}
+.weatherly .dashboard > * {min-width:0}
+.weatherly .intro {position:relative;z-index:50;isolation:isolate}
+.weatherly .location-search {position:relative;z-index:51}
+.weatherly .search-wrap {z-index:52}
+.weatherly .suggestions {z-index:1000}
+.weatherly .dashboard {position:relative;z-index:1}
+.weatherly .hourly-scroll,.weatherly .daily-list,.weatherly .curve-wrap {min-width:0;max-width:100%}
+.weatherly .hourly-scroll {overscroll-behavior-x:contain}
+.weatherly .panel {overflow-wrap:anywhere}
+.weatherly .hero-heading > div:first-child,.weatherly .temperature-display > div:first-child {min-width:0}
+.weatherly .hero-controls {flex-shrink:0}
+.weatherly .map-section iframe {display:block;max-width:100%}
+.weatherly .map-section .glass,.weatherly .map-section .glass-dark {max-width:100%}
+.weatherly .search-icon {width:20px;height:20px;flex-shrink:0;color:var(--muted)}
+.weatherly .location-button {display:inline-flex;align-items:center;justify-content:center;gap:9px;min-width:148px;padding:0 18px;font-weight:700;background:var(--ink);color:var(--surface);border-color:var(--ink);box-shadow:0 5px 16px #18335b19}
+.weatherly .location-button:hover {background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 8px 22px #477df03d}
+.weatherly .location-button .location-icon {width:19px;height:19px;flex:none}
+.weatherly .header-actions {flex-shrink:0}
+.weatherly .intro h1 {letter-spacing:-.045em}
+.weatherly .brand {letter-spacing:-.055em}
+.weatherly .detail strong {font-variant-numeric:tabular-nums}
+@media (max-width:1100px) {
+ .weatherly .intro {align-items:stretch;flex-direction:column;gap:22px}
+ .weatherly .location-search {width:100%;max-width:620px;min-width:0}
+ .weatherly .detail-grid {grid-template-columns:repeat(2,minmax(0,1fr))}
+ .weatherly .detail strong {font-size:clamp(17px,2.5vw,23px);white-space:normal}
+}
+@media (max-width:850px) {
+ .weatherly .shell {padding-inline:clamp(16px,3.2vw,28px)}
+ .weatherly .dashboard {grid-template-columns:minmax(0,1fr)}
+ .weatherly .dashboard > .panel {grid-column:1/-1}
+ .weatherly .detail-grid {grid-template-columns:repeat(3,minmax(0,1fr))}
+ .weatherly .hero {min-height:310px}
+ .weatherly .city-grid {grid-template-columns:repeat(2,minmax(0,1fr))}
+ .weatherly .city-tile:last-child {grid-column:1/-1}
+}
+@media (max-width:620px) {
+ .weatherly .detail-grid {grid-template-columns:repeat(2,minmax(0,1fr))}
+ .weatherly .city-grid {grid-template-columns:minmax(0,1fr)}
+ .weatherly .city-tile:last-child {grid-column:auto}
+ .weatherly .day-row {grid-template-columns:36px minmax(0,1fr) 58px 66px;gap:7px}
+ .weatherly .day-condition {min-width:0}
+ .weatherly .day-condition span {display:none}
+ .weatherly .hero-bottom {justify-content:flex-start}
+ .weatherly .hero-bottom span:last-child {margin-left:0}
+ .weatherly .temperature-display {min-width:0}
+ .weatherly .detail {padding:14px 10px}
+ .weatherly .detail strong {font-size:19px}
+}
+@media (max-width:420px) {
+ .weatherly .topbar {gap:8px}
+ .weatherly .brand {font-size:20px;white-space:nowrap}
+ .weatherly .brand-icon {width:29px;height:29px;font-size:18px;margin-right:4px}
+ .weatherly .header-actions {gap:5px}
+ .weatherly .topbar .theme-switch {width:62px;min-width:62px;padding-inline:9px}
+ .weatherly.dark-mode .theme-switch .theme-knob {transform:translateX(24px)}
+ .weatherly .unit-segment {height:38px}
+ .weatherly .unit-segment button {min-width:33px}
+ .weatherly .unit-indicator {width:33px;height:28px}
+ .weatherly .unit-indicator[data-unit="fahrenheit"] {transform:translateX(33px)}
+ .weatherly .location-button {min-width:48px;width:48px;padding:0}
+ .weatherly .location-button span {display:none}
+ .weatherly .hero-controls {gap:5px}
+ .weatherly .favorite-button {width:37px;min-height:37px}
+ .weatherly .hero-symbol svg {width:82px}
+ .weatherly .big-temp {font-size:65px}
+ .weatherly .curve-heading {flex-wrap:wrap}
+}
