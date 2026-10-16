@@ -154,7 +154,6 @@ export default function OtherCities({ onCityClick, unit }: OtherCitiesProps) {
     const selectedCities = getRandomCities(3);
     await fetchCitiesWeather(selectedCities);
     setIsRefreshing(false);
-    setRefreshKey(prev => prev + 1);
   };
 
   return (
