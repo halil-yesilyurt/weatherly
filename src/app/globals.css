@@ -189,3 +189,13 @@ footer a {color:var(--accent)}
 @media(max-width:850px) {.weatherly .city-grid {grid-template-columns:repeat(2,minmax(0,1fr))}.weatherly .city-tile:last-child {grid-column:1/-1}}
 @media(max-width:570px) {.weatherly .city-grid {grid-template-columns:1fr}.weatherly .city-tile:last-child {grid-column:auto}.weatherly .city-tile {min-height:175px}.weatherly .discover {padding:20px}.weatherly .discover-heading {align-items:flex-start;gap:12px;flex-direction:column}.weatherly .refresh-button {font-size:12px}.weatherly .map-section {padding:20px}.weatherly .topbar .theme-switch {width:68px}.weatherly.dark-mode .theme-switch .theme-knob {transform:translateX(30px)}.weatherly .unit-segment button {min-width:37px}.weatherly .unit-indicator {width:37px}.weatherly .unit-indicator[data-unit="fahrenheit"] {transform:translateX(37px)}}
 @media(prefers-reduced-motion:reduce) {.weatherly .dashboard>.panel,.weatherly .city-tile,.weatherly .big-temp,.weatherly .hero-symbol,.weatherly .skeleton-dashboard .skeleton-block {animation:none!important;transform:none!important}}
+
+.weatherly .hero-symbol svg {width:clamp(92px,10vw,145px);height:auto;max-width:100%;filter:drop-shadow(0 12px 14px #163e6030)}
+.weatherly .hour-symbol {height:45px;display:grid;place-items:center}
+.weatherly .city-icon {display:grid;place-items:center}
+.weatherly .day-condition svg {flex:0 0 34px}
+.weather-glyph-sun {transform-origin:57px 47px;animation:sun-sway 15s ease-in-out infinite}
+.weather-glyph-rain {animation:rain-bob 1.8s ease-in-out infinite}
+@keyframes sun-sway {50%{transform:rotate(13deg)}}
+@keyframes rain-bob {50%{transform:translateY(4px);opacity:.65}}
+@media(prefers-reduced-motion:reduce){.weather-glyph-sun,.weather-glyph-rain {animation:none!important}}
