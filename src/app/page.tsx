@@ -1,3 +1,4 @@
+import Link from 'next/link';
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -98,7 +99,7 @@ export default function Home() {
     <main className={dark ? 'weatherly dark-mode' : 'weatherly'}>
       <div className="shell">
         <header className="topbar">
-          <a className="brand" href="/" aria-label="Weatherly home"><span className="brand-icon">☀</span> weatherly<span className="brand-dot">.</span></a>
+          <Link className="brand" href="/" aria-label="Weatherly home"><span className="brand-icon">☀</span> weatherly<span className="brand-dot">.</span></Link>
           <div className="header-actions">
             <button className="icon-button" onClick={() => setDark(x=>!x)} aria-label={dark ? 'Use light theme' : 'Use dark theme'} title="Change theme">{dark ? '☀' : '☾'}</button>
             <button className="unit-button" onClick={() => setUnit(x=>x==='celsius'?'fahrenheit':'celsius')} aria-label="Toggle temperature unit">{unit==='celsius'?'°C':'°F'} <span>⇄</span></button>
@@ -115,7 +116,7 @@ export default function Home() {
                   if(e.key==='ArrowDown'){e.preventDefault();setSelectedIndex(i=>Math.min(i+1,suggestions.length-1));}
                   if(e.key==='ArrowUp'){e.preventDefault();setSelectedIndex(i=>Math.max(-1,i-1));}
                   if(e.key==='Escape'){setQuery('');setSuggestions([]);}
-                }} aria-expanded={suggestions.length>0} aria-controls="city-results" autoComplete="off"/>
+                }} role="combobox" aria-autocomplete="list" aria-expanded={suggestions.length>0} aria-controls="city-results" autoComplete="off"/>
                 {searching && <span className="search-spinner" aria-label="Searching">◌</span>}
               </form>
               {suggestions.length>0 && <div id="city-results" className="suggestions" role="listbox">
@@ -138,7 +139,7 @@ export default function Home() {
             <div className="temperature-display"><div><span className="big-temp">{temp(weather.main.temp)}°</span><p className="condition">{weather.weather[0].description}</p><p className="feels">Feels like {temp(weather.main.feels_like)}{suffix}</p></div><span className="hero-symbol" role="img" aria-label={weather.weather[0].description}>{symbol(weather.weather[0].icon)}</span></div>
             <div className="hero-bottom"><span>↑ {temp(weather.main.temp_max)}° High</span><span>↓ {temp(weather.main.temp_min)}° Low</span><span>Updated {formatHour(weather.dt,0)} UTC</span></div>
           </div>
-          <div className="details panel"><div className="section-title"><h3>Today's highlights</h3><span>At a glance</span></div>
+          <div className="details panel"><div className="section-title"><h3>Today&apos;s highlights</h3><span>At a glance</span></div>
             <div className="detail-grid">
               <div className="detail"><span>💧 Humidity</span><strong>{weather.main.humidity}%</strong><small>Relative humidity</small></div>
               <div className="detail"><span>〰 Wind speed</span><strong>{Math.round(weather.wind.speed*3.6)} <em>km/h</em></strong><small>At ground level</small></div>
