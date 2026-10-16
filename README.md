@@ -7,6 +7,9 @@ A responsive weather dashboard for exploring current conditions, hourly forecast
 - Tailwind CSS and custom responsive styles
 - Open-Meteo forecast and geocoding APIs (via server-side Next.js routes)
 - Browser localStorage for favorites, temperature units and theme
+- Custom illustrated weather SVGs, condition-aware hero scenes and restrained motion
+- Rediscover random world cities and explore the selected location on OpenStreetMap
+- Hourly temperature trend chart and staggered loading placeholders
 
 ## Run locally
 ```bash
