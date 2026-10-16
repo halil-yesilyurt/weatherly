@@ -314,3 +314,28 @@ footer a {color:var(--accent)}
  .weatherly .location-info-tile {padding:12px}
  .weatherly .map-overlay {right:8px;top:8px}
 }
+
+/* Accessible application states */
+.weatherly .state-page {min-height:min(77vh,690px);display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:70px 20px;position:relative}
+.weatherly .state-number {font-size:clamp(100px,18vw,200px);letter-spacing:-.1em;line-height:.9;font-weight:800;color:var(--border);position:absolute;top:55px;pointer-events:none}
+.weatherly .state-symbol {font-size:70px;line-height:1;z-index:1;margin:0 0 22px;color:var(--accent);filter:drop-shadow(0 12px 25px #527fb642)}
+.weatherly .state-page .eyebrow,.weatherly .state-page h1,.weatherly .state-page p,.weatherly .state-actions {position:relative;z-index:1}
+.weatherly .state-page h1 {font-size:clamp(30px,4vw,52px);letter-spacing:-.065em;line-height:1.15;max-width:680px;margin:8px 0 12px}
+.weatherly .state-page p:not(.eyebrow) {max-width:470px;line-height:1.8;color:var(--muted);font-size:15px;margin:0 0 25px}
+.weatherly .state-primary,.weatherly .state-secondary {display:inline-flex;min-height:48px;align-items:center;justify-content:center;padding:12px 23px;border-radius:13px;text-decoration:none;font-size:13px;font-weight:750;transition:transform .2s,background .2s}
+.weatherly .state-primary {background:var(--ink);color:var(--surface);border:1px solid var(--ink)}
+.weatherly .state-secondary {background:var(--surface);border:1px solid var(--border);color:var(--ink)}
+.weatherly .state-primary:hover,.weatherly .state-secondary:hover {transform:translateY(-3px)}
+.weatherly .state-actions {display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.weatherly .state-loading {height:65vh;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);font-size:14px;gap:20px}
+.weatherly .state-loading-sun {font-size:60px;color:var(--accent);animation:weather-float 4s ease-in-out infinite}
+.weatherly .search-empty {margin:0;padding:16px 14px;color:var(--muted);font-size:13px;line-height:1.6}
+.weatherly .location-button:disabled {opacity:.65;cursor:wait}
+.weatherly .error-banner {display:flex;flex-wrap:wrap;align-items:center;gap:12px;border:1px solid #da9b8b;background:#fff2ed;color:#783626;padding:16px;border-radius:16px}
+.weatherly.dark-mode .error-banner {background:#49322f;color:#fff0e8;border-color:#ad7064}
+.weatherly .error-banner strong {font-size:13px}
+.weatherly .error-banner span {font-size:12px;line-height:1.5;flex:1 1 190px}
+.weatherly .error-banner div {display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.weatherly .error-banner button {margin:0;padding:8px 11px;border:1px solid currentColor;border-radius:9px;background:transparent;text-decoration:none;font-weight:700;font-size:12px}
+.weatherly .error-banner button:hover {background:#9b463016}
+@media(prefers-reduced-motion:reduce){.weatherly .state-loading-sun{animation:none}}
