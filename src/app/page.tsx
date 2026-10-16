@@ -119,7 +119,7 @@ export default function Home() {
         <header className="topbar">
           <Link className="brand" href="/" aria-label="Weatherly home"><span className="brand-icon">☀</span> weatherly<span className="brand-dot">.</span></Link>
           <div className="header-actions">
-            <button className="theme-switch" onClick={() => setDark(x=>!x)} aria-label={dark ? 'Use light theme' : 'Use dark theme'} title="Change theme"><span className="theme-moon">☾</span><span className="theme-sun">☀</span><span className="theme-knob" /></button>
+            <button className="theme-switch" onClick={() => setDark(x=>!x)} aria-label={dark ? 'Use light theme' : 'Use dark theme'} title="Change theme"><span className="theme-sun">☀</span><span className="theme-moon">☾</span><span className="theme-knob" /></button>
             <div className="unit-segment" role="group" aria-label="Temperature unit"><span className="unit-indicator" data-unit={unit}/><button className={unit==='celsius'?'active':''} aria-pressed={unit==='celsius'} onClick={()=>setUnit('celsius')}>°C</button><button className={unit==='fahrenheit'?'active':''} aria-pressed={unit==='fahrenheit'} onClick={()=>setUnit('fahrenheit')}>°F</button></div>
           </div>
         </header>
