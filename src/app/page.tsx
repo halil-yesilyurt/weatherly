@@ -190,7 +190,7 @@ export default function Home() {
           <DiscoverCities currentCity={city.name} unit={unit} onSelect={selectCity}/>
           <div className="map-section panel"><div className="section-title"><div><p className="eyebrow">EXPLORE THE PLACE</p><h3>Where in the world?</h3></div><span>OpenStreetMap</span></div><LocationMap key={city.lat+':'+city.lon} weather={weather}/></div>
         </div>}
-        <footer>Weatherly · Forecast data by <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a> · Made for curious skies</footer>
+        <footer className="site-footer"><span className="footer-brand">Weatherly <span>© {new Date().getFullYear()}</span></span><nav aria-label="Project links"><a href="https://github.com/halil-yesilyurt/weatherly" target="_blank" rel="noopener noreferrer">Source code ↗</a><a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Weather data: Open-Meteo</a><a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a></nav></footer>
       </div>
     </main>
   );
