@@ -8,6 +8,7 @@ import type { WeatherData, ForecastData, TemperatureUnit } from '@/types/weather
 import DiscoverCities from '@/components/DiscoverCities';
 import LocationMap from '@/components/LocationMap';
 import WeatherGlyph from '@/components/WeatherGlyph';
+import TemperatureCurve from '@/components/TemperatureCurve';
 
 type City = GeocodeResult;
 const DEFAULT_CITY: City = { name: 'London', country: 'GB', lat: 51.5072, lon: -0.1276 };
@@ -167,7 +168,7 @@ export default function Home() {
             </div>
           </div>
           <section className="hourly panel"><div className="section-title"><h3>Next 24 hours</h3><span>Hourly forecast</span></div>
-            <div className="hourly-scroll">{next24.map(x=><div className="hour-cell" key={x.dt}><span>{formatHour(x.dt,forecast?.city.timezone ?? 0)}</span><span className="hour-symbol"><WeatherGlyph code={x.weather[0].icon} size={40}/></span><strong>{temp(x.main.temp)}°</strong><small>💧 {Math.round(x.pop*100)}%</small></div>)}</div>
+            <TemperatureCurve items={next24} unit={unit}/><div className="hourly-scroll">{next24.map(x=><div className="hour-cell" key={x.dt}><span>{formatHour(x.dt,forecast?.city.timezone ?? 0)}</span><span className="hour-symbol"><WeatherGlyph code={x.weather[0].icon} size={40}/></span><strong>{temp(x.main.temp)}°</strong><small>💧 {Math.round(x.pop*100)}%</small></div>)}</div>
           </section>
           <section className="weekly panel"><div className="section-title"><h3>7-day forecast</h3><span>This week</span></div>
             <div className="daily-list">{daily.map(x=><div className="day-row" key={x.date}><span className="day-name">{new Date(x.date+'T12:00:00Z').toLocaleDateString('en-US',{weekday:'short',timeZone:'UTC'})}</span><span className="day-condition"><WeatherGlyph code={x.weather.icon} size={34}/> <span>{x.weather.description}</span></span><span className="rain">💧 {x.pop}%</span><div className="temp-track" aria-hidden="true"><span style={{left:(Math.max(0,Math.min(100,(x.min+20)/70*100)))+'%',right:(100-Math.max(0,Math.min(100,(x.max+20)/70*100)))+'%'}}/></div><span className="day-temps">{temp(x.max)}° <small>{temp(x.min)}°</small></span></div>)}</div>
