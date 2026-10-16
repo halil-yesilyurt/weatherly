@@ -36,6 +36,12 @@ class WeatherService {
     });
   }
 
+  async reverseGeocode(lat: number, lon: number): Promise<Pick<GeocodeResult, 'name' | 'country'>> {
+    return this.getJSON<Pick<GeocodeResult, 'name' | 'country'>>(
+      '/api/reverse-geocoding?lat=' + encodeURIComponent(lat) + '&lon=' + encodeURIComponent(lon)
+    );
+  }
+
   async searchCities(query: string, limit = 8, signal?: AbortSignal): Promise<GeocodeResult[]> {
     if (query.trim().length < 2) return [];
     const data = await this.getJSON<{ results: GeocodeResult[] }>(

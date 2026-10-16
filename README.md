@@ -18,7 +18,7 @@ The interface includes responsive cards, custom weather illustrations, subtle mo
 
 ## Built with
 
-| | |
+| Area | Technologies |
 | --- | --- |
 | **Frontend** | Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS |
 | **Weather & search** | Open-Meteo forecast and geocoding APIs |

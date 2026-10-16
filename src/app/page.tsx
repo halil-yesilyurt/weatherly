@@ -125,7 +125,11 @@ export default function Home() {
     setLocating(true);
     try {
       const pos = await weatherService.getCurrentPosition();
-      selectCity({name:'Current location',country:'',lat:pos.latitude,lon:pos.longitude});
+      let place = { name: 'Current location', country: '' };
+      try {
+        place = await weatherService.reverseGeocode(pos.latitude, pos.longitude);
+      } catch { /* Geolocation still works if the locality lookup fails. */ }
+      selectCity({...place,lat:pos.latitude,lon:pos.longitude});
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Location unavailable');
     } finally { setLocating(false); }
@@ -150,7 +154,7 @@ export default function Home() {
           <div><p className="eyebrow">YOUR DAILY FORECAST</p><h1>Weather, made simple<span className="accent">.</span></h1><p className="subtitle">Clear skies or cloudy days, stay one step ahead.</p></div>
           <div className="location-search">
             <div className="search-wrap">
-              <form onSubmit={e=>{e.preventDefault();searchSubmit();}} role="search">
+              <form id="weatherly-city-search" onSubmit={e=>{e.preventDefault();void searchSubmit();}} role="search">
                 <MagnifyingGlassIcon className="search-icon" aria-hidden="true"/>
                 <input aria-label="Search for a city" placeholder="Search for a city..." value={query} onChange={e=>{setQuery(e.target.value);setSelectedIndex(-1);setSearchComplete(false);}} onKeyDown={e=>{
                   if(e.key==='ArrowDown'){e.preventDefault();setSelectedIndex(i=>Math.min(i+1,suggestions.length-1));}
@@ -158,14 +162,14 @@ export default function Home() {
                   if(e.key==='Escape'){setQuery('');setSuggestions([]);}
                 }} role="combobox" aria-autocomplete="list" aria-expanded={suggestions.length>0 || (searchComplete && query.trim().length>=2)} aria-controls="city-results" autoComplete="off"/>
                 <span className="search-status-slot" aria-live="polite">{searching && <span className="search-spinner" aria-label="Searching" />}</span>
-                <button className="search-submit" type="submit" disabled={query.trim().length < 2 || searching} aria-label="Search cities">Search</button>
               </form>
               {(suggestions.length>0 || (searchComplete && query.trim().length>=2)) && <div id="city-results" className="suggestions" role="listbox">
                 {suggestions.map((x,i)=><button key={x.lat+':'+x.lon} className={selectedIndex===i?'active':''} role="option" aria-selected={selectedIndex===i} onClick={()=>selectCity(x)}>{x.name}{x.state?', '+x.state:''} <span>{x.country}</span></button>)}
                 {suggestions.length===0 && <p className="search-empty" role="status">{searchError ? 'City search is unavailable. Please try again.' : 'No matching cities. Try another spelling or a nearby city.'}</p>}
               </div>}
             </div>
-            <button type="button" className="location-button" onClick={locate} disabled={locating} title="Use my location" aria-label={locating ? 'Locating you' : 'Use my location'}><MapPinIcon className="location-icon" aria-hidden="true"/> <span>{locating ? 'Locating…' : 'My location'}</span></button>
+            <button form="weatherly-city-search" className="search-submit" type="submit" disabled={query.trim().length < 2 || searching} aria-label="Search cities">Search</button>
+            <button type="button" className="location-button" onClick={locate} disabled={locating} title={locating ? 'Locating…' : 'Use my location'} aria-label={locating ? 'Locating you' : 'Use my location'}><MapPinIcon className="location-icon" aria-hidden="true"/></button>
           </div>
         </section>
 
