@@ -26,7 +26,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const requestId = useRef(0);
-  const initialized = useRef(false);
+  const [hydrated, setHydrated] = useState(false);
   const latestQuery = useRef(0);
 
   useEffect(() => {
@@ -37,11 +37,11 @@ export default function Home() {
       if (saved.unit === 'fahrenheit') setUnit('fahrenheit');
       if (typeof saved.dark === 'boolean') setDark(saved.dark);
     } catch { /* Invalid saved preferences are ignored */ }
-    initialized.current = true;
+    setHydrated(true);
   }, []);
   useEffect(() => {
-    if (initialized.current) localStorage.setItem(STORAGE_KEY, JSON.stringify({city,favorites,unit,dark}));
-  }, [city,favorites,unit,dark]);
+    if (hydrated) localStorage.setItem(STORAGE_KEY, JSON.stringify({city,favorites,unit,dark}));
+  }, [city,favorites,unit,dark,hydrated]);
 
   const loadWeather = useCallback(async (selected: City) => {
     const id = ++requestId.current;
@@ -58,7 +58,7 @@ export default function Home() {
       if (id === requestId.current) setLoading(false);
     }
   }, []);
-  useEffect(() => { loadWeather(city); }, [city,loadWeather]);
+  useEffect(() => { if (hydrated) loadWeather(city); }, [city,loadWeather,hydrated]);
 
   useEffect(() => {
     const id = ++latestQuery.current;
@@ -136,7 +136,7 @@ export default function Home() {
               <button className={'favorite-button '+(currentFavorite?'saved':'')} onClick={toggleFavorite} aria-label={currentFavorite?'Remove favorite city':'Add favorite city'} title={currentFavorite?'Remove from favorites':'Save city'}>{currentFavorite?'★':'☆'}</button>
             </div>
             <div className="temperature-display"><div><span className="big-temp">{temp(weather.main.temp)}°</span><p className="condition">{weather.weather[0].description}</p><p className="feels">Feels like {temp(weather.main.feels_like)}{suffix}</p></div><span className="hero-symbol" role="img" aria-label={weather.weather[0].description}>{symbol(weather.weather[0].icon)}</span></div>
-            <div className="hero-bottom"><span>↑ {temp(weather.main.temp_max)}° High</span><span>↓ {temp(weather.main.temp_min)}° Low</span><span>Updated {formatHour(weather.dt,weather.timezone)}</span></div>
+            <div className="hero-bottom"><span>↑ {temp(weather.main.temp_max)}° High</span><span>↓ {temp(weather.main.temp_min)}° Low</span><span>Updated {formatHour(weather.dt,0)} UTC</span></div>
           </div>
           <div className="details panel"><div className="section-title"><h3>Today's highlights</h3><span>At a glance</span></div>
             <div className="detail-grid">
@@ -144,7 +144,7 @@ export default function Home() {
               <div className="detail"><span>〰 Wind speed</span><strong>{Math.round(weather.wind.speed*3.6)} <em>km/h</em></strong><small>At ground level</small></div>
               <div className="detail"><span>◉ Visibility</span><strong>{Math.round(weather.visibility/1000)} <em>km</em></strong><small>Current visibility</small></div>
               <div className="detail"><span>◷ Pressure</span><strong>{Math.round(weather.main.pressure)} <em>hPa</em></strong><small>Sea-level pressure</small></div>
-              <div className="detail"><span>🌅 Sunrise</span><strong>{formatHour(weather.sys.sunrise,weather.timezone)}</strong><small>Local forecast time (UTC)</small></div>
+              <div className="detail"><span>🌅 Sunrise</span><strong>{formatHour(weather.sys.sunrise,weather.timezone)}</strong><small>UTC</small></div>
               <div className="detail"><span>🌇 Sunset</span><strong>{formatHour(weather.sys.sunset,weather.timezone)}</strong><small>Local forecast time (UTC)</small></div>
             </div>
           </div>
