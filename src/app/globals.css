@@ -214,7 +214,8 @@ footer a {color:var(--accent)}
 
 /* Responsive containment: grid items must shrink instead of expanding the viewport. */
 .weatherly {width:100%;max-width:100%;overflow-x:clip;font-family:var(--font-weatherly),system-ui,sans-serif}
-.weatherly .shell,.weatherly .dashboard,.weatherly .panel,.weatherly .intro,.weatherly .location-search,.weatherly .search-wrap {min-width:0;max-width:100%}
+.weatherly .shell {width:100%;max-width:1260px;min-width:0;margin-inline:auto}
+.weatherly .dashboard,.weatherly .panel,.weatherly .intro,.weatherly .location-search,.weatherly .search-wrap {min-width:0;max-width:100%}
 .weatherly .dashboard {grid-template-columns:minmax(0,1.17fr) minmax(0,1fr)}
 .weatherly .dashboard > * {min-width:0}
 .weatherly .intro {position:relative;z-index:50;isolation:isolate}
@@ -377,3 +378,29 @@ html::-webkit-scrollbar-thumb:hover { background: #7995b8; }
 .weatherly.dark-mode .suggestions::-webkit-scrollbar-thumb { background: #58769a; }
 .weatherly.dark-mode .hourly-scroll::-webkit-scrollbar-thumb:hover,
 .weatherly.dark-mode .suggestions::-webkit-scrollbar-thumb:hover { background: #80a0c5; }
+
+/* Search controls remain fixed-size while async suggestions are loading. */
+.weatherly .search-wrap form { gap: 8px; }
+.weatherly .search-wrap input { flex: 1 1 auto; min-width: 0; }
+.weatherly .search-status-slot { display: inline-grid; place-items: center; flex: 0 0 18px; width: 18px; height: 24px; }
+.weatherly .search-spinner { display: block; width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: weather-spin .75s linear infinite; font-size: 0 !important; }
+.weatherly .search-submit { flex: 0 0 auto; border: 0; border-radius: 10px; background: var(--accent); color: #fff; padding: 9px 14px; font-size: 12px; font-weight: 750; }
+.weatherly .search-submit:hover:not(:disabled) { filter: brightness(.94); }
+.weatherly .search-submit:disabled { opacity: .5; cursor: not-allowed; }
+.weatherly .location-button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; }
+@media (max-width: 570px) {
+  .weatherly .search-submit { padding: 9px 10px; }
+  .weatherly .search-wrap form { padding-inline: 10px; gap: 6px; }
+  .weatherly .search-status-slot { flex-basis: 15px; width: 15px; }
+}
+
+/* Scroll track is visible and matches Weatherly's blue palette. */
+.weatherly .hourly-scroll { padding-bottom: 12px; scrollbar-width: auto; scrollbar-color: var(--accent) var(--subtle); }
+.weatherly .hourly-scroll::-webkit-scrollbar { height: 9px; }
+.weatherly .hourly-scroll::-webkit-scrollbar-track { background: var(--subtle); border: 1px solid var(--border); border-radius: 999px; }
+.weatherly .hourly-scroll::-webkit-scrollbar-thumb { background: var(--accent); border: 2px solid var(--subtle); border-radius: 999px; }
+.weatherly .hourly-scroll::-webkit-scrollbar-thumb:hover { background: #2867dc; }
+.weatherly.dark-mode .hourly-scroll { scrollbar-color: var(--accent) var(--subtle); }
+.weatherly.dark-mode .hourly-scroll::-webkit-scrollbar-thumb { background: var(--accent); }
+
+.weatherly .copy-confirmation { align-self: center; color: #fff; background: #0f366188; padding: 7px 9px; border-radius: 9px; font-size: 11px; white-space: nowrap; }

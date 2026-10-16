@@ -95,10 +95,19 @@ export default function Home() {
   const selectCity = (selected: City) => {
     setCity(selected); setQuery(''); setSuggestions([]); setSelectedIndex(-1); setSearchComplete(false); setSearchError(false); setCopied(false);
   };
-  const searchSubmit = () => {
+  const searchSubmit = async () => {
     const selected = suggestions[selectedIndex] ?? suggestions[0];
-    if (selected) selectCity(selected);
-    else if (query.trim().length >= 2) setSearchComplete(true);
+    if (selected) { selectCity(selected); return; }
+    const term = query.trim();
+    if (term.length < 2 || searching) return;
+    setSearching(true);
+    setSearchError(false);
+    try {
+      const results = await weatherService.searchCities(term, 8);
+      if (results[0]) selectCity(results[0]);
+      else { setSuggestions([]); setSearchComplete(true); }
+    } catch { setSearchError(true); setSearchComplete(true); }
+    finally { setSearching(false); }
   };
   const currentFavorite = favorites.some(x => x.lat === city.lat && x.lon === city.lon);
   const toggleFavorite = () => setFavorites(xs => currentFavorite
@@ -148,14 +157,15 @@ export default function Home() {
                   if(e.key==='ArrowUp'){e.preventDefault();setSelectedIndex(i=>Math.max(-1,i-1));}
                   if(e.key==='Escape'){setQuery('');setSuggestions([]);}
                 }} role="combobox" aria-autocomplete="list" aria-expanded={suggestions.length>0 || (searchComplete && query.trim().length>=2)} aria-controls="city-results" autoComplete="off"/>
-                {searching && <span className="search-spinner" aria-label="Searching">◌</span>}
+                <span className="search-status-slot" aria-live="polite">{searching && <span className="search-spinner" aria-label="Searching" />}</span>
+                <button className="search-submit" type="submit" disabled={query.trim().length < 2 || searching} aria-label="Search cities">Search</button>
               </form>
               {(suggestions.length>0 || (searchComplete && query.trim().length>=2)) && <div id="city-results" className="suggestions" role="listbox">
                 {suggestions.map((x,i)=><button key={x.lat+':'+x.lon} className={selectedIndex===i?'active':''} role="option" aria-selected={selectedIndex===i} onClick={()=>selectCity(x)}>{x.name}{x.state?', '+x.state:''} <span>{x.country}</span></button>)}
                 {suggestions.length===0 && <p className="search-empty" role="status">{searchError ? 'City search is unavailable. Please try again.' : 'No matching cities. Try another spelling or a nearby city.'}</p>}
               </div>}
             </div>
-            <button className="location-button" onClick={locate} disabled={locating} title="Use my location" aria-label={locating ? 'Locating you' : 'Use my location'}><MapPinIcon className="location-icon" aria-hidden="true"/> <span>{locating ? 'Locating…' : 'My location'}</span></button>
+            <button type="button" className="location-button" onClick={locate} disabled={locating} title="Use my location" aria-label={locating ? 'Locating you' : 'Use my location'}><MapPinIcon className="location-icon" aria-hidden="true"/> <span>{locating ? 'Locating…' : 'My location'}</span></button>
           </div>
         </section>
 
@@ -166,7 +176,7 @@ export default function Home() {
           <div className={"hero panel weather-" + (weather.weather[0].main.toLowerCase().replace(/[^a-z]/g, "")) + (weather.weather[0].icon.endsWith("n")?" is-night":"")}>
             <div className="hero-heading">
               <div><p className="eyebrow">CURRENT WEATHER</p><h2>{city.name}{city.country?', '+city.country:''}</h2><p className="date">{new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}</p></div>
-              <div className="hero-controls"><button className="favorite-button" onClick={share} aria-label="Copy shareable city link" title="Share this city">{copied?'✓':'↗'}</button><button className={'favorite-button '+(currentFavorite?'saved':'')} onClick={toggleFavorite} aria-label={currentFavorite?'Remove favorite city':'Add favorite city'} title={currentFavorite?'Remove from favorites':'Save city'}>{currentFavorite?'★':'☆'}</button></div>
+              <div className="hero-controls">{copied && <span className="copy-confirmation" role="status">Link copied</span>}<button className="favorite-button" onClick={share} aria-label={copied ? "City link copied" : "Copy shareable city link"} title={copied ? "Link copied" : "Copy city link"}>{copied?'✓':'↗'}</button><button className={'favorite-button '+(currentFavorite?'saved':'')} onClick={toggleFavorite} aria-label={currentFavorite?'Remove favorite city':'Add favorite city'} title={currentFavorite?'Remove from favorites':'Save city'}>{currentFavorite?'★':'☆'}</button></div>
             </div>
             <div className="temperature-display"><div><span className="big-temp" key={unit+city.name}>{temp(weather.main.temp)}°</span><p className="condition">{weather.weather[0].description}</p><p className="feels">Feels like {temp(weather.main.feels_like)}{suffix}</p></div><span className="hero-symbol" key={weather.weather[0].icon} role="img" aria-label={weather.weather[0].description}><WeatherGlyph code={weather.weather[0].icon} size={116}/></span></div>
             <div className="hero-bottom"><span>↑ {temp(weather.main.temp_max)}° High</span><span>↓ {temp(weather.main.temp_min)}° Low</span><span>Updated {formatHour(weather.dt,weather.timezone)} local</span></div>
