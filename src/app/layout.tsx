@@ -5,7 +5,11 @@ import { Analytics } from "@vercel/analytics/next";
 
 const manrope = Manrope({ variable: '--font-weatherly', subsets: ['latin'], display: 'swap' });
 
+const productionHost = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+const siteUrl = productionHost ? `https://${productionHost}` : 'http://localhost:3000';
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: "Weatherly | Your daily forecast",
   description: "Explore accurate hourly and 7-day weather forecasts for cities around the world. Save favorite locations and personalize your experience.",
   keywords: "weather, forecast, temperature, climate, weatherly",
