@@ -12,8 +12,6 @@ import WeatherGlyph from '@/components/WeatherGlyph';
 type City = GeocodeResult;
 const DEFAULT_CITY: City = { name: 'London', country: 'GB', lat: 51.5072, lon: -0.1276 };
 const STORAGE_KEY = 'weatherly-preferences-v2';
-const symbols: Record<string, string> = { '01':'☀️','02':'🌤️','03':'⛅','04':'☁️','09':'🌧️','10':'🌦️','11':'⛈️','13':'❄️','50':'🌫️' };
-function symbol(code: string) { return symbols[code.slice(0,2)] ?? '🌤️'; }
 function formatHour(timestamp: number, timezone: number) {
   return new Date((timestamp + timezone) * 1000).toLocaleTimeString('en-GB', { timeZone: 'UTC', hour:'2-digit', minute:'2-digit' });
 }
