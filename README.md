@@ -26,6 +26,6 @@ npm run build
 ## Notes
 - Forecast data is provided by [Open-Meteo](https://open-meteo.com/). Observe provider usage terms and attribution rules.
 - The project is intended as a **noncommercial portfolio demo**.
-- The timezone indicator next to sunrise/sunset and last updated time is UTC. Forecast dates follow Open-Meteo's UTC timestamps.
+- Sunrise/sunset and hourly forecast times are displayed using the selected city's UTC offset. Daily labels use the provider's local calendar dates.
 - Favorite cities and display preferences remain in this browser only.
 - Geolocation works in secure contexts (HTTPS or localhost). No user accounts or database are used.
