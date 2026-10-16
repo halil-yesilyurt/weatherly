@@ -9,6 +9,7 @@ import DiscoverCities from '@/components/DiscoverCities';
 import LocationMap from '@/components/LocationMap';
 import WeatherGlyph from '@/components/WeatherGlyph';
 import TemperatureCurve from '@/components/TemperatureCurve';
+import { MapPinIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 
 type City = GeocodeResult;
 const DEFAULT_CITY: City = { name: 'London', country: 'GB', lat: 51.5072, lon: -0.1276 };
@@ -129,7 +130,7 @@ export default function Home() {
           <div className="location-search">
             <div className="search-wrap">
               <form onSubmit={e=>{e.preventDefault();searchSubmit();}} role="search">
-                <span aria-hidden="true">⌕</span>
+                <MagnifyingGlassIcon className="search-icon" aria-hidden="true"/>
                 <input aria-label="Search for a city" placeholder="Search for a city..." value={query} onChange={e=>{setQuery(e.target.value);setSelectedIndex(-1);}} onKeyDown={e=>{
                   if(e.key==='ArrowDown'){e.preventDefault();setSelectedIndex(i=>Math.min(i+1,suggestions.length-1));}
                   if(e.key==='ArrowUp'){e.preventDefault();setSelectedIndex(i=>Math.max(-1,i-1));}
@@ -141,7 +142,7 @@ export default function Home() {
                 {suggestions.map((x,i)=><button key={x.lat+':'+x.lon} className={selectedIndex===i?'active':''} role="option" aria-selected={selectedIndex===i} onClick={()=>selectCity(x)}>{x.name}{x.state?', '+x.state:''} <span>{x.country}</span></button>)}
               </div>}
             </div>
-            <button className="location-button" onClick={locate} title="Use my location" aria-label="Use my location">◎ <span>My location</span></button>
+            <button className="location-button" onClick={locate} title="Use my location" aria-label="Use my location"><MapPinIcon className="location-icon" aria-hidden="true"/> <span>My location</span></button>
           </div>
         </section>
 
