@@ -28,4 +28,5 @@ npm run build
 - The project is intended as a **noncommercial portfolio demo**.
 - Sunrise/sunset and hourly forecast times are displayed using the selected city's UTC offset. Daily labels use the provider's local calendar dates.
 - Favorite cities and display preferences remain in this browser only.
+- Share city links with the arrow button on the main weather card.
 - Geolocation works in secure contexts (HTTPS or localhost). No user accounts or database are used.
