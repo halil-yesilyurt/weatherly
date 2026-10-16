@@ -138,7 +138,7 @@ export default function Home() {
               <button className={'favorite-button '+(currentFavorite?'saved':'')} onClick={toggleFavorite} aria-label={currentFavorite?'Remove favorite city':'Add favorite city'} title={currentFavorite?'Remove from favorites':'Save city'}>{currentFavorite?'★':'☆'}</button>
             </div>
             <div className="temperature-display"><div><span className="big-temp">{temp(weather.main.temp)}°</span><p className="condition">{weather.weather[0].description}</p><p className="feels">Feels like {temp(weather.main.feels_like)}{suffix}</p></div><span className="hero-symbol" role="img" aria-label={weather.weather[0].description}>{symbol(weather.weather[0].icon)}</span></div>
-            <div className="hero-bottom"><span>↑ {temp(weather.main.temp_max)}° High</span><span>↓ {temp(weather.main.temp_min)}° Low</span><span>Updated {formatHour(weather.dt,0)} UTC</span></div>
+            <div className="hero-bottom"><span>↑ {temp(weather.main.temp_max)}° High</span><span>↓ {temp(weather.main.temp_min)}° Low</span><span>Updated {formatHour(weather.dt,weather.timezone)} local</span></div>
           </div>
           <div className="details panel"><div className="section-title"><h3>Today&apos;s highlights</h3><span>At a glance</span></div>
             <div className="detail-grid">
@@ -146,12 +146,12 @@ export default function Home() {
               <div className="detail"><span>〰 Wind speed</span><strong>{Math.round(weather.wind.speed*3.6)} <em>km/h</em></strong><small>At ground level</small></div>
               <div className="detail"><span>◉ Visibility</span><strong>{Math.round(weather.visibility/1000)} <em>km</em></strong><small>Current visibility</small></div>
               <div className="detail"><span>◷ Pressure</span><strong>{Math.round(weather.main.pressure)} <em>hPa</em></strong><small>Sea-level pressure</small></div>
-              <div className="detail"><span>🌅 Sunrise</span><strong>{formatHour(weather.sys.sunrise,weather.timezone)}</strong><small>UTC</small></div>
-              <div className="detail"><span>🌇 Sunset</span><strong>{formatHour(weather.sys.sunset,weather.timezone)}</strong><small>Local forecast time (UTC)</small></div>
+              <div className="detail"><span>🌅 Sunrise</span><strong>{formatHour(weather.sys.sunrise,weather.timezone)}</strong><small>Local time</small></div>
+              <div className="detail"><span>🌇 Sunset</span><strong>{formatHour(weather.sys.sunset,weather.timezone)}</strong><small>Local time</small></div>
             </div>
           </div>
           <section className="hourly panel"><div className="section-title"><h3>Next 24 hours</h3><span>Hourly forecast</span></div>
-            <div className="hourly-scroll">{next24.map(x=><div className="hour-cell" key={x.dt}><span>{formatHour(x.dt,0)}</span><span className="hour-symbol">{symbol(x.weather[0].icon)}</span><strong>{temp(x.main.temp)}°</strong><small>💧 {Math.round(x.pop*100)}%</small></div>)}</div>
+            <div className="hourly-scroll">{next24.map(x=><div className="hour-cell" key={x.dt}><span>{formatHour(x.dt,forecast?.city.timezone ?? 0)}</span><span className="hour-symbol">{symbol(x.weather[0].icon)}</span><strong>{temp(x.main.temp)}°</strong><small>💧 {Math.round(x.pop*100)}%</small></div>)}</div>
           </section>
           <section className="weekly panel"><div className="section-title"><h3>7-day forecast</h3><span>This week</span></div>
             <div className="daily-list">{daily.map(x=><div className="day-row" key={x.date}><span className="day-name">{new Date(x.date+'T12:00:00Z').toLocaleDateString('en-US',{weekday:'short',timeZone:'UTC'})}</span><span className="day-condition">{symbol(x.weather.icon)} <span>{x.weather.description}</span></span><span className="rain">💧 {x.pop}%</span><div className="temp-track" aria-hidden="true"><span style={{left:(Math.max(0,Math.min(100,(x.min+20)/70*100)))+'%',right:(100-Math.max(0,Math.min(100,(x.max+20)/70*100)))+'%'}}/></div><span className="day-temps">{temp(x.max)}° <small>{temp(x.min)}°</small></span></div>)}</div>
