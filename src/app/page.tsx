@@ -1,5 +1,6 @@
-import Link from 'next/link';
 'use client';
+
+import Link from 'next/link';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { weatherService, type GeocodeResult } from '@/services/weatherService';
