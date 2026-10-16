@@ -1,190 +1,162 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { WeatherData, ForecastData, TemperatureUnit } from '@/types/weather';
-import { weatherService } from '@/services/weatherService';
-import SearchBar from '@/components/SearchBar';
-import WeatherCard from '@/components/WeatherCard';
-import HourlyForecast from '@/components/HourlyForecast';
-import LoadingSpinner from '@/components/LoadingSpinner';
-import ErrorMessage from '@/components/ErrorMessage';
-import TemperatureToggle from '@/components/TemperatureToggle';
-import OtherCities from '@/components/OtherCities';
-import LocationMap from '@/components/LocationMap';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { weatherService, type GeocodeResult } from '@/services/weatherService';
+import type { WeatherData, ForecastData, TemperatureUnit } from '@/types/weather';
 
+type City = GeocodeResult;
+const DEFAULT_CITY: City = { name: 'London', country: 'GB', lat: 51.5072, lon: -0.1276 };
+const STORAGE_KEY = 'weatherly-preferences-v2';
+const symbols: Record<string, string> = { '01':'☀️','02':'🌤️','03':'⛅','04':'☁️','09':'🌧️','10':'🌦️','11':'⛈️','13':'❄️','50':'🌫️' };
+function symbol(code: string) { return symbols[code.slice(0,2)] ?? '🌤️'; }
+function formatHour(timestamp: number, timezone: number) {
+  return new Date((timestamp + timezone) * 1000).toLocaleTimeString('en-GB', { timeZone: 'UTC', hour:'2-digit', minute:'2-digit' });
+}
 export default function Home() {
+  const [city, setCity] = useState<City>(DEFAULT_CITY);
+  const [favorites, setFavorites] = useState<City[]>([]);
+  const [unit, setUnit] = useState<TemperatureUnit>('celsius');
+  const [dark, setDark] = useState(false);
+  const [query, setQuery] = useState('');
+  const [suggestions, setSuggestions] = useState<City[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [forecast, setForecast] = useState<ForecastData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [unit, setUnit] = useState<TemperatureUnit>('celsius');
-  const [searchValue, setSearchValue] = useState('');
-  const [isTemperatureChanging, setIsTemperatureChanging] = useState(false);
-
-  const requestRef = useRef(0);
-  const fetchWeatherByCity = useCallback(async (city: string) => {
-    const request = ++requestRef.current;
-    try {
-      setLoading(true);
-      setError(null);
-      const bundle = await weatherService.getWeatherBundleByCity(city);
-      if (request !== requestRef.current) return;
-      setWeather(bundle.weather);
-      setForecast(bundle.forecast);
-    } catch (err) {
-      if (request === requestRef.current) setError(err instanceof Error ? err.message : 'Failed to fetch weather data');
-    } finally {
-      if (request === requestRef.current) setLoading(false);
-    }
-  }, []);
-
-  const fetchWeatherByLocation = useCallback(async () => {
-    const request = ++requestRef.current;
-    setLoading(true);
-    setError(null);
-    try {
-      const location = await weatherService.getCurrentPosition();
-      const bundle = await weatherService.getWeatherBundleByCoords(location.latitude, location.longitude);
-      if (request !== requestRef.current) return;
-      setWeather(bundle.weather);
-      setForecast(bundle.forecast);
-      setSearchValue('Current location');
-    } catch (err) {
-      if (request === requestRef.current) setError(err instanceof Error ? err.message : 'Location unavailable');
-    } finally {
-      if (request === requestRef.current) setLoading(false);
-    }
-  }, []);
-
-  const handleSearch = (city: string) => {
-    setSearchValue(city);
-    fetchWeatherByCity(city);
-  };
-
-  const handleCityClick = (city: string) => {
-    setSearchValue(city);
-    fetchWeatherByCity(city);
-    // Scroll to top smoothly
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleRetry = () => {
-    if (searchValue.trim() && searchValue !== 'Current location') fetchWeatherByCity(searchValue);
-    else fetchWeatherByCity('London');
-  };
-
-  const handleTemperatureToggle = (newUnit: TemperatureUnit) => {
-    setIsTemperatureChanging(true);
-    setUnit(newUnit);
-    
-    // Add a small delay for visual feedback
-    setTimeout(() => {
-      setIsTemperatureChanging(false);
-    }, 500);
-  };
+  const [error, setError] = useState('');
+  const requestId = useRef(0);
+  const initialized = useRef(false);
+  const latestQuery = useRef(0);
 
   useEffect(() => {
-    fetchWeatherByCity('London');
-  }, [fetchWeatherByCity]);
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+      if (saved.city && typeof saved.city.lat === 'number' && typeof saved.city.lon === 'number') setCity(saved.city);
+      if (Array.isArray(saved.favorites)) setFavorites(saved.favorites.filter((x: City) => typeof x.lat === 'number' && typeof x.lon === 'number').slice(0, 8));
+      if (saved.unit === 'fahrenheit') setUnit('fahrenheit');
+      if (typeof saved.dark === 'boolean') setDark(saved.dark);
+    } catch { /* Invalid saved preferences are ignored */ }
+    initialized.current = true;
+  }, []);
+  useEffect(() => {
+    if (initialized.current) localStorage.setItem(STORAGE_KEY, JSON.stringify({city,favorites,unit,dark}));
+  }, [city,favorites,unit,dark]);
+
+  const loadWeather = useCallback(async (selected: City) => {
+    const id = ++requestId.current;
+    setLoading(true);
+    setError('');
+    try {
+      const bundle = await weatherService.getWeatherBundleByCoords(selected.lat, selected.lon);
+      if (id !== requestId.current) return;
+      setWeather({ ...bundle.weather, name: selected.name, sys: {...bundle.weather.sys, country: selected.country} });
+      setForecast(bundle.forecast);
+    } catch (cause) {
+      if (id === requestId.current) setError(cause instanceof Error ? cause.message : 'Unable to load forecast');
+    } finally {
+      if (id === requestId.current) setLoading(false);
+    }
+  }, []);
+  useEffect(() => { loadWeather(city); }, [city,loadWeather]);
+
+  useEffect(() => {
+    const id = ++latestQuery.current;
+    if (query.trim().length < 2) { setSuggestions([]); setSearching(false); return; }
+    const controller = new AbortController();
+    const timer = window.setTimeout(async () => {
+      setSearching(true);
+      try {
+        const results = await weatherService.searchCities(query.trim(), 8, controller.signal);
+        if (id === latestQuery.current) setSuggestions(results);
+      } catch { if (id === latestQuery.current) setSuggestions([]); }
+      finally { if (id === latestQuery.current) setSearching(false); }
+    }, 300);
+    return () => { controller.abort(); clearTimeout(timer); };
+  }, [query]);
+
+  const selectCity = (selected: City) => {
+    setCity(selected); setQuery(''); setSuggestions([]); setSelectedIndex(-1);
+  };
+  const searchSubmit = () => {
+    const selected = suggestions[selectedIndex] ?? suggestions[0];
+    if (selected) selectCity(selected);
+  };
+  const currentFavorite = favorites.some(x => x.lat === city.lat && x.lon === city.lon);
+  const toggleFavorite = () => setFavorites(xs => currentFavorite
+    ? xs.filter(x => !(x.lat === city.lat && x.lon === city.lon))
+    : [...xs.slice(-7),city]);
+  const locate = () => weatherService.getCurrentPosition()
+    .then(pos => selectCity({name:'Current location',country:'',lat:pos.latitude,lon:pos.longitude}))
+    .catch(cause => setError(cause instanceof Error ? cause.message : 'Location unavailable'));
+  const temp = (n: number) => Math.round(unit === 'fahrenheit' ? n*9/5+32 : n);
+  const suffix = unit === 'fahrenheit' ? '°F' : '°C';
+  const daily = forecast?.daily?.slice(0,7) ?? [];
+  const next24 = forecast?.list.filter(x => x.dt >= Math.floor(Date.now()/1000)).slice(0,24) ?? [];
 
   return (
-    <main className="min-h-screen p-4 md:p-8">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
-            <Link href="/" className="transition-transform hover:scale-105 block">
-              <Image 
-                src="/weatherly-logo.png" 
-                alt="Weatherly Logo" 
-                width={300}
-                height={80}
-                className="h-16 md:h-20 w-auto"
-                priority
-              />
-            </Link>
+    <main className={dark ? 'weatherly dark-mode' : 'weatherly'}>
+      <div className="shell">
+        <header className="topbar">
+          <a className="brand" href="/" aria-label="Weatherly home"><span className="brand-icon">☀</span> weatherly<span className="brand-dot">.</span></a>
+          <div className="header-actions">
+            <button className="icon-button" onClick={() => setDark(x=>!x)} aria-label={dark ? 'Use light theme' : 'Use dark theme'} title="Change theme">{dark ? '☀' : '☾'}</button>
+            <button className="unit-button" onClick={() => setUnit(x=>x==='celsius'?'fahrenheit':'celsius')} aria-label="Toggle temperature unit">{unit==='celsius'?'°C':'°F'} <span>⇄</span></button>
           </div>
-          <p className="font-caveat text-white/60 text-2xl mb-8">
-            beautiful weather, at a glance
-          </p>
-          
-          {/* Search, location and temperature preferences */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6 w-full">
-            <div className="w-full max-w-md">
-              <SearchBar 
-                onSearch={handleSearch} 
-                isLoading={loading}
-                value={searchValue}
-                onChange={setSearchValue}
-              />
+        </header>
+
+        <section className="intro">
+          <div><p className="eyebrow">YOUR DAILY FORECAST</p><h1>Weather, made simple<span className="accent">.</span></h1><p className="subtitle">Clear skies or cloudy days, stay one step ahead.</p></div>
+          <div className="location-search">
+            <div className="search-wrap">
+              <form onSubmit={e=>{e.preventDefault();searchSubmit();}} role="search">
+                <span aria-hidden="true">⌕</span>
+                <input aria-label="Search for a city" placeholder="Search for a city..." value={query} onChange={e=>{setQuery(e.target.value);setSelectedIndex(-1);}} onKeyDown={e=>{
+                  if(e.key==='ArrowDown'){e.preventDefault();setSelectedIndex(i=>Math.min(i+1,suggestions.length-1));}
+                  if(e.key==='ArrowUp'){e.preventDefault();setSelectedIndex(i=>Math.max(-1,i-1));}
+                  if(e.key==='Escape'){setQuery('');setSuggestions([]);}
+                }} aria-expanded={suggestions.length>0} aria-controls="city-results" autoComplete="off"/>
+                {searching && <span className="search-spinner" aria-label="Searching">◌</span>}
+              </form>
+              {suggestions.length>0 && <div id="city-results" className="suggestions" role="listbox">
+                {suggestions.map((x,i)=><button key={x.lat+':'+x.lon} className={selectedIndex===i?'active':''} role="option" aria-selected={selectedIndex===i} onClick={()=>selectCity(x)}>{x.name}{x.state?', '+x.state:''} <span>{x.country}</span></button>)}
+              </div>}
             </div>
-            <button type="button" onClick={fetchWeatherByLocation} className="px-4 h-10 rounded-xl border border-white/20 text-white/85 hover:bg-white/10 focus-visible:outline focus-visible:outline-2" aria-label="Get weather at my location">Use my location</button>
-            <div className="flex-shrink-0">
-              <TemperatureToggle 
-                unit={unit} 
-                onToggle={handleTemperatureToggle} 
-                isLoading={isTemperatureChanging}
-              />
+            <button className="location-button" onClick={locate} title="Use my location" aria-label="Use my location">◎ <span>My location</span></button>
+          </div>
+        </section>
+
+        {favorites.length>0 && <nav className="favorite-strip" aria-label="Favorite cities">{favorites.map(x=><button key={x.lat+':'+x.lon} onClick={()=>selectCity(x)} className={x.lat===city.lat&&x.lon===city.lon?'selected':''}>☆ {x.name}</button>)}</nav>}
+        {error && <div className="error-banner" role="alert">{error} <button onClick={()=>loadWeather(city)}>Retry</button></div>}
+        {loading && !weather && <div className="loading" role="status">Loading your forecast…</div>}
+        {weather && <div className={loading?'dashboard updating':'dashboard'}>
+          <div className="hero panel">
+            <div className="hero-heading">
+              <div><p className="eyebrow">CURRENT WEATHER</p><h2>{city.name}{city.country?', '+city.country:''}</h2><p className="date">{new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}</p></div>
+              <button className={'favorite-button '+(currentFavorite?'saved':'')} onClick={toggleFavorite} aria-label={currentFavorite?'Remove favorite city':'Add favorite city'} title={currentFavorite?'Remove from favorites':'Save city'}>{currentFavorite?'★':'☆'}</button>
+            </div>
+            <div className="temperature-display"><div><span className="big-temp">{temp(weather.main.temp)}°</span><p className="condition">{weather.weather[0].description}</p><p className="feels">Feels like {temp(weather.main.feels_like)}{suffix}</p></div><span className="hero-symbol" role="img" aria-label={weather.weather[0].description}>{symbol(weather.weather[0].icon)}</span></div>
+            <div className="hero-bottom"><span>↑ {temp(weather.main.temp_max)}° High</span><span>↓ {temp(weather.main.temp_min)}° Low</span><span>Updated {formatHour(weather.dt,weather.timezone)}</span></div>
+          </div>
+          <div className="details panel"><div className="section-title"><h3>Today's highlights</h3><span>At a glance</span></div>
+            <div className="detail-grid">
+              <div className="detail"><span>💧 Humidity</span><strong>{weather.main.humidity}%</strong><small>Relative humidity</small></div>
+              <div className="detail"><span>〰 Wind speed</span><strong>{Math.round(weather.wind.speed*3.6)} <em>km/h</em></strong><small>At ground level</small></div>
+              <div className="detail"><span>◉ Visibility</span><strong>{Math.round(weather.visibility/1000)} <em>km</em></strong><small>Current visibility</small></div>
+              <div className="detail"><span>◷ Pressure</span><strong>{Math.round(weather.main.pressure)} <em>hPa</em></strong><small>Sea-level pressure</small></div>
+              <div className="detail"><span>🌅 Sunrise</span><strong>{formatHour(weather.sys.sunrise,weather.timezone)}</strong><small>Local forecast time (UTC)</small></div>
+              <div className="detail"><span>🌇 Sunset</span><strong>{formatHour(weather.sys.sunset,weather.timezone)}</strong><small>Local forecast time (UTC)</small></div>
             </div>
           </div>
-        </div>
-
-
-        {/* Content */}
-        <div className={`space-y-8 transition-all duration-500 ${isTemperatureChanging ? 'opacity-80 transform scale-[0.99]' : 'opacity-100 transform scale-100'}`}>
-          {loading && <LoadingSpinner />}
-          
-          {error && !loading && (
-            <ErrorMessage message={error} onRetry={handleRetry} />
-          )}
-          
-          {weather && forecast && !loading && !error && (
-            <>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <WeatherCard weather={weather} unit={unit} />
-                <HourlyForecast forecast={forecast} unit={unit} />
-              </div>
-              
-              {/* Additional Weather Info */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* 7-Day Forecast */}
-                <div className="glass rounded-3xl p-6 text-white text-center">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-medium text-white/80">Next 7 Days</h3>
-                  </div>
-                  <div className="space-y-3">
-                    {(forecast.daily ?? []).slice(1, 8).map((day) => {
-                      const temp = (value: number) => unit === 'fahrenheit' ? Math.round(value * 9 / 5 + 32) : Math.round(value);
-                      return (
-                        <div key={day.date} className="flex justify-between items-center glass-dark rounded-xl p-3">
-                          <span className="text-sm text-white/75">{new Date(day.date + 'T12:00:00Z').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' })}</span>
-                          <span className="text-sm text-white/90">{day.weather.main} · {day.pop}% rain</span>
-                          <span className="text-sm font-medium">{temp(day.max)}° / {temp(day.min)}°</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Other Cities with Real Weather */}
-                <OtherCities onCityClick={handleCityClick} unit={unit} />
-
-                {/* Location Map */}
-                <LocationMap weather={weather} />
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* Footer */}
-        <footer className="text-center mt-16 text-white/40 text-sm">
-          <p>Powered by OpenWeather API • Built with ❤️ using Next.js & Tailwind CSS</p>
-          <p className="text-xs mt-2 text-white/30">
-            Real-time weather data • Auto-complete search • Temperature conversion
-          </p>
-        </footer>
+          <section className="hourly panel"><div className="section-title"><h3>Next 24 hours</h3><span>Hourly forecast</span></div>
+            <div className="hourly-scroll">{next24.map(x=><div className="hour-cell" key={x.dt}><span>{formatHour(x.dt,0)}</span><span className="hour-symbol">{symbol(x.weather[0].icon)}</span><strong>{temp(x.main.temp)}°</strong><small>💧 {Math.round(x.pop*100)}%</small></div>)}</div>
+          </section>
+          <section className="weekly panel"><div className="section-title"><h3>7-day forecast</h3><span>This week</span></div>
+            <div className="daily-list">{daily.map(x=><div className="day-row" key={x.date}><span className="day-name">{new Date(x.date+'T12:00:00Z').toLocaleDateString('en-US',{weekday:'short',timeZone:'UTC'})}</span><span className="day-condition">{symbol(x.weather.icon)} <span>{x.weather.description}</span></span><span className="rain">💧 {x.pop}%</span><div className="temp-track" aria-hidden="true"><span style={{left:(Math.max(0,Math.min(100,(x.min+20)/70*100)))+'%',right:(100-Math.max(0,Math.min(100,(x.max+20)/70*100)))+'%'}}/></div><span className="day-temps">{temp(x.max)}° <small>{temp(x.min)}°</small></span></div>)}</div>
+          </section>
+          <div className="about panel"><span className="about-icon">🌍</span><div><h3>Explore the world</h3><p>Search any city, save your favorites, and follow the forecast wherever you go.</p></div><button onClick={()=>document.querySelector<HTMLInputElement>('.search-wrap input')?.focus()}>Explore cities ↗</button></div>
+        </div>}
+        <footer>Weatherly · Forecast data by <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a> · Made for curious skies</footer>
       </div>
     </main>
   );
