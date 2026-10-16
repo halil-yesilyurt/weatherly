@@ -25,19 +25,18 @@ export default function Home() {
 
   const requestRef = useRef(0);
   const fetchWeatherByCity = useCallback(async (city: string) => {
+    const request = ++requestRef.current;
     try {
       setLoading(true);
       setError(null);
-      
-      const request = ++requestRef.current;
       const bundle = await weatherService.getWeatherBundleByCity(city);
       if (request !== requestRef.current) return;
       setWeather(bundle.weather);
       setForecast(bundle.forecast);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch weather data');
+      if (request === requestRef.current) setError(err instanceof Error ? err.message : 'Failed to fetch weather data');
     } finally {
-      setLoading(false);
+      if (request === requestRef.current) setLoading(false);
     }
   }, []);
 
@@ -165,7 +164,7 @@ export default function Home() {
                           <span className="text-sm font-medium">{temp(day.max)}° / {temp(day.min)}°</span>
                         </div>
                       );
-                    })}             })()}
+                    })}
                   </div>
                 </div>
 
