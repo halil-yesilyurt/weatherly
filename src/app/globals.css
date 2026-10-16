@@ -203,3 +203,11 @@ footer a {color:var(--accent)}
 .weatherly .curve-wrap {padding:18px 18px 6px;background:var(--subtle);border:1px solid var(--border);border-radius:16px;margin-bottom:18px;overflow:hidden}
 .weatherly .curve-heading {display:flex;justify-content:space-between;gap:12px;font-size:12px;color:var(--muted);font-weight:600;margin-bottom:9px}
 .weatherly .curve-wrap svg {display:block;overflow:visible}
+
+/* The forecast gently changes the atmosphere rather than swapping the whole UI. */
+.weatherly .hero.weather-clear {background:radial-gradient(circle at 82% 24%,#ffe0a977,transparent 35%),linear-gradient(120deg,#3978b8 5%,#67b2c3 100%)}
+.weatherly .hero.weather-rain,.weatherly .hero.weather-drizzle {background:radial-gradient(circle at 86% 26%,#a1d7db44,transparent 36%),linear-gradient(125deg,#344d70,#557d91)}
+.weatherly .hero.weather-snow {background:radial-gradient(circle at 78% 22%,#f5faff99,transparent 36%),linear-gradient(122deg,#5b85ad,#93bacb)}
+.weatherly .hero.weather-thunderstorm {background:radial-gradient(circle at 80% 25%,#ac9fd933,transparent 38%),linear-gradient(118deg,#303b60,#59637f)}
+.weatherly .hero.weather-mist {background:linear-gradient(120deg,#687e90,#91a6b1)}
+.weatherly .hero.is-night {background:radial-gradient(circle at 83% 23%,#899aca45,transparent 36%),linear-gradient(125deg,#182841,#354e78)}
