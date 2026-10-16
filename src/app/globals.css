@@ -286,3 +286,31 @@ footer a {color:var(--accent)}
 }
 
 @media (min-width:421px) and (max-width:570px) {.weatherly .location-button {min-width:48px;width:48px;padding:0}.weatherly .location-button span {display:none}}
+
+/* Map: theme-safe contrast; no inherited semi-transparent legacy glass styling. */
+.weatherly .location-map {color:var(--ink);width:100%;min-width:0;}
+.weatherly .location-map-frame {height:255px;border-radius:15px;overflow:hidden;position:relative;background:var(--subtle);border:1px solid var(--border)}
+.weatherly .location-map-frame iframe {display:block;width:100%;height:100%;border:0;min-height:0;max-width:none;border-radius:0}
+.weatherly .map-placeholder {position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);font-size:13px;background:var(--subtle)}
+.weatherly .map-overlay {position:absolute;right:12px;top:12px;display:flex;align-items:center;gap:11px;max-width:calc(100% - 24px);background:#fff;color:#1d2d44;border:1px solid #d7e1eb;border-radius:13px;padding:10px 13px;box-shadow:0 8px 24px #1428412b;pointer-events:none}
+.weatherly .map-overlay-marker {width:30px;height:30px;background:#e9f2ff;color:#2867ba;border-radius:10px;display:grid;place-items:center;flex:none}
+.weatherly .map-overlay-marker svg {width:18px;height:18px}
+.weatherly .map-overlay-copy {display:flex;flex-direction:column;min-width:0;gap:3px}
+.weatherly .map-overlay-copy strong {font-size:12px;font-weight:750;line-height:1.25;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.weatherly .map-overlay-copy small {font-size:11px;color:#52677e;font-variant-numeric:tabular-nums}
+.weatherly .location-info-grid,.weatherly .location-actions {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px}
+.weatherly .location-info-tile {min-width:0;background:var(--subtle);border:1px solid var(--border);padding:15px 16px;border-radius:13px;display:flex;flex-direction:column;gap:7px}
+.weatherly .location-info-label {font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.01em}
+.weatherly .location-info-tile strong {font-size:13px;color:var(--ink);font-weight:750;word-break:break-word;font-variant-numeric:tabular-nums}
+.weatherly .location-action {display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;border-radius:12px;border:1px solid var(--border);background:var(--surface);font-size:12px;font-weight:700;text-decoration:none;color:var(--ink);padding:9px 12px;transition:background .2s ease,transform .2s ease,border-color .2s ease}
+.weatherly .location-action svg {width:16px;height:16px;flex:none;color:var(--accent)}
+.weatherly .location-action:hover {transform:translateY(-2px);background:var(--subtle);border-color:var(--accent)}
+.weatherly .location-copy-error {margin-top:8px;color:#be3b38;font-size:12px}
+.weatherly .brand-icon {font-size:0!important;color:transparent!important;background:#e7f0ff url('/weatherly-icon.svg') center/cover no-repeat}
+@media(max-width:520px) {
+ .weatherly .location-map-frame {height:225px}
+ .weatherly .location-info-grid {grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .weatherly .location-actions {grid-template-columns:minmax(0,1fr);gap:8px}
+ .weatherly .location-info-tile {padding:12px}
+ .weatherly .map-overlay {right:8px;top:8px}
+}
