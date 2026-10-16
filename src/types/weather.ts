@@ -44,6 +44,7 @@ export interface WeatherData {
 }
 
 export interface ForecastData {
+  daily?: Array<{ date: string; dt: number; min: number; max: number; pop: number; weather: { id: number; main: string; description: string; icon: string } }>;
   cod: string;
   message: number;
   cnt: number;
