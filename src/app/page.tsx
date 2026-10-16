@@ -27,6 +27,7 @@ export default function Home() {
   const [forecast, setForecast] = useState<ForecastData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [copied, setCopied] = useState(false);
   const requestId = useRef(0);
   const [hydrated, setHydrated] = useState(false);
   const latestQuery = useRef(0);
@@ -39,6 +40,12 @@ export default function Home() {
       if (saved.unit === 'fahrenheit') setUnit('fahrenheit');
       if (typeof saved.dark === 'boolean') setDark(saved.dark);
     } catch { /* Invalid saved preferences are ignored */ }
+    const params = new URLSearchParams(window.location.search);
+    const lat = Number(params.get('lat'));
+    const lon = Number(params.get('lon'));
+    if (params.has('lat') && params.has('lon') && Number.isFinite(lat) && Number.isFinite(lon) && Math.abs(lat) <= 90 && Math.abs(lon) <= 180) {
+      setCity({lat,lon,name:(params.get('city')||'Shared location').slice(0,100),country:''});
+    }
     setHydrated(true);
   }, []);
   useEffect(() => {
@@ -88,6 +95,14 @@ export default function Home() {
   const toggleFavorite = () => setFavorites(xs => currentFavorite
     ? xs.filter(x => !(x.lat === city.lat && x.lon === city.lon))
     : [...xs.slice(-7),city]);
+  const share = async () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('lat',String(city.lat));
+    url.searchParams.set('lon',String(city.lon));
+    url.searchParams.set('city',city.name);
+    try { await navigator.clipboard.writeText(url.toString()); setCopied(true); }
+    catch { setError('Could not copy this location link'); }
+  };
   const locate = () => weatherService.getCurrentPosition()
     .then(pos => selectCity({name:'Current location',country:'',lat:pos.latitude,lon:pos.longitude}))
     .catch(cause => setError(cause instanceof Error ? cause.message : 'Location unavailable'));
@@ -135,7 +150,7 @@ export default function Home() {
           <div className="hero panel">
             <div className="hero-heading">
               <div><p className="eyebrow">CURRENT WEATHER</p><h2>{city.name}{city.country?', '+city.country:''}</h2><p className="date">{new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}</p></div>
-              <button className={'favorite-button '+(currentFavorite?'saved':'')} onClick={toggleFavorite} aria-label={currentFavorite?'Remove favorite city':'Add favorite city'} title={currentFavorite?'Remove from favorites':'Save city'}>{currentFavorite?'★':'☆'}</button>
+              <div className="hero-controls"><button className="favorite-button" onClick={share} aria-label="Copy shareable city link" title="Share this city">{copied?'✓':'↗'}</button><button className={'favorite-button '+(currentFavorite?'saved':'')} onClick={toggleFavorite} aria-label={currentFavorite?'Remove favorite city':'Add favorite city'} title={currentFavorite?'Remove from favorites':'Save city'}>{currentFavorite?'★':'☆'}</button></div>
             </div>
             <div className="temperature-display"><div><span className="big-temp">{temp(weather.main.temp)}°</span><p className="condition">{weather.weather[0].description}</p><p className="feels">Feels like {temp(weather.main.feels_like)}{suffix}</p></div><span className="hero-symbol" role="img" aria-label={weather.weather[0].description}>{symbol(weather.weather[0].icon)}</span></div>
             <div className="hero-bottom"><span>↑ {temp(weather.main.temp_max)}° High</span><span>↓ {temp(weather.main.temp_min)}° Low</span><span>Updated {formatHour(weather.dt,weather.timezone)} local</span></div>
