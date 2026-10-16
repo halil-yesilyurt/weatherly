@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { WeatherData, ForecastData, TemperatureUnit } from '@/types/weather';
@@ -10,7 +10,6 @@ import WeatherCard from '@/components/WeatherCard';
 import HourlyForecast from '@/components/HourlyForecast';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import ErrorMessage from '@/components/ErrorMessage';
-import DemoNotice from '@/components/DemoNotice';
 import TemperatureToggle from '@/components/TemperatureToggle';
 import OtherCities from '@/components/OtherCities';
 import LocationMap from '@/components/LocationMap';
@@ -24,23 +23,17 @@ export default function Home() {
   const [searchValue, setSearchValue] = useState('');
   const [isTemperatureChanging, setIsTemperatureChanging] = useState(false);
 
-  // Check if we're using demo data
-  const isDemoMode = !process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY || 
-                     process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY === 'demo_key' ||
-                     process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY === 'your_api_key_here';
-
+  const requestRef = useRef(0);
   const fetchWeatherByCity = useCallback(async (city: string) => {
     try {
       setLoading(true);
       setError(null);
       
-      const [weatherData, forecastData] = await Promise.all([
-        weatherService.getCurrentWeatherByCity(city),
-        weatherService.getForecastByCity(city),
-      ]);
-      
-      setWeather(weatherData);
-      setForecast(forecastData);
+      const request = ++requestRef.current;
+      const bundle = await weatherService.getWeatherBundleByCity(city);
+      if (request !== requestRef.current) return;
+      setWeather(bundle.weather);
+      setForecast(bundle.forecast);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch weather data');
     } finally {
@@ -49,29 +42,22 @@ export default function Home() {
   }, []);
 
   const fetchWeatherByLocation = useCallback(async () => {
+    const request = ++requestRef.current;
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
-      setError(null);
-      
       const location = await weatherService.getCurrentPosition();
-      const [weatherData, forecastData] = await Promise.all([
-        weatherService.getCurrentWeatherByCoords(location.latitude, location.longitude),
-        weatherService.getForecastByCoords(location.latitude, location.longitude),
-      ]);
-      
-      setWeather(weatherData);
-      setForecast(forecastData);
-      // Only update search value after successful location detection
-      setSearchValue(weatherData.name);
+      const bundle = await weatherService.getWeatherBundleByCoords(location.latitude, location.longitude);
+      if (request !== requestRef.current) return;
+      setWeather(bundle.weather);
+      setForecast(bundle.forecast);
+      setSearchValue('Current location');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch weather data');
-      // Fallback to a default city if geolocation fails, but keep search bar empty
-      await fetchWeatherByCity('London');
-      setSearchValue(''); // Keep search bar empty on geolocation failure
+      if (request === requestRef.current) setError(err instanceof Error ? err.message : 'Location unavailable');
     } finally {
-      setLoading(false);
+      if (request === requestRef.current) setLoading(false);
     }
-  }, [fetchWeatherByCity]);
+  }, []);
 
   const handleSearch = (city: string) => {
     setSearchValue(city);
@@ -86,7 +72,8 @@ export default function Home() {
   };
 
   const handleRetry = () => {
-    fetchWeatherByLocation();
+    if (searchValue.trim() && searchValue !== 'Current location') fetchWeatherByCity(searchValue);
+    else fetchWeatherByCity('London');
   };
 
   const handleTemperatureToggle = (newUnit: TemperatureUnit) => {
@@ -100,8 +87,8 @@ export default function Home() {
   };
 
   useEffect(() => {
-    fetchWeatherByLocation();
-  }, [fetchWeatherByLocation]);
+    fetchWeatherByCity('London');
+  }, [fetchWeatherByCity]);
 
   return (
     <main className="min-h-screen p-4 md:p-8">
@@ -124,7 +111,7 @@ export default function Home() {
             beautiful weather, at a glance
           </p>
           
-          {/* Search and Temperature Toggle - Better centering for mobile */}
+          {/* Search, location and temperature preferences */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6 w-full">
             <div className="w-full max-w-md">
               <SearchBar 
@@ -134,6 +121,7 @@ export default function Home() {
                 onChange={setSearchValue}
               />
             </div>
+            <button type="button" onClick={fetchWeatherByLocation} className="px-4 h-10 rounded-xl border border-white/20 text-white/85 hover:bg-white/10 focus-visible:outline focus-visible:outline-2" aria-label="Get weather at my location">Use my location</button>
             <div className="flex-shrink-0">
               <TemperatureToggle 
                 unit={unit} 
@@ -144,8 +132,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Demo Notice */}
-        {isDemoMode && <DemoNotice />}
 
         {/* Content */}
         <div className={`space-y-8 transition-all duration-500 ${isTemperatureChanging ? 'opacity-80 transform scale-[0.99]' : 'opacity-100 transform scale-100'}`}>
@@ -170,79 +156,16 @@ export default function Home() {
                     <h3 className="text-lg font-medium text-white/80">Next 7 Days</h3>
                   </div>
                   <div className="space-y-3">
-                    {(() => {
-                      // Get unique days starting from tomorrow
-                      const today = new Date();
-                      const tomorrow = new Date(today);
-                      tomorrow.setDate(today.getDate() + 1);
-                      tomorrow.setHours(0, 0, 0, 0);
-      
-                      // Process forecast items and group by day
-                      const dayGroups = new Map();
-                      
-                      for (const item of forecast.list) {
-                        const itemDate = new Date(item.dt * 1000);
-                        const dateKey = itemDate.toDateString();
-                        
-                        if (!dayGroups.has(dateKey)) {
-                          dayGroups.set(dateKey, []);
-                        }
-                        dayGroups.get(dateKey).push(item);
-                      }
-                      
-                      // Get tomorrow and the next 6 days (total 7 days)
-                      const daysToShow = [];
-                      for (let i = 0; i < 7; i++) {
-                        const targetDate = new Date(tomorrow);
-                        targetDate.setDate(tomorrow.getDate() + i);
-                        const dateKey = targetDate.toDateString();
-                        
-                        if (dayGroups.has(dateKey)) {
-                          // Use the first item of the day (or you could average temperatures)
-                          const dayItems = dayGroups.get(dateKey);
-                          // Find the item closest to noon for better representation
-                          const noonItem = dayItems.reduce((closest: ForecastData['list'][0], current: ForecastData['list'][0]) => {
-                            const currentHour = new Date(current.dt * 1000).getHours();
-                            const closestHour = new Date(closest.dt * 1000).getHours();
-                            return Math.abs(currentHour - 12) < Math.abs(closestHour - 12) ? current : closest;
-                          });
-                          
-                          daysToShow.push({ item: noonItem, dayIndex: i });
-                        }
-                      }
-                      
-                      return daysToShow.map(({ item, dayIndex }, index) => {
-                        const convertTemp = (temp: number) => {
-                          if (unit === 'fahrenheit') {
-                            return Math.round((temp * 9/5) + 32);
-                          }
-                          return Math.round(temp);
-                        };
-                        const tempSymbol = unit === 'fahrenheit' ? '°F' : '°C';
-                        const itemDate = new Date(item.dt * 1000);
-                        
-                        const getDayLabel = (dayIndex: number) => {
-                          if (dayIndex === 0) return 'Tomorrow';
-                          return itemDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-                        };
-                        
-                        return (
-                          <div key={index} className="flex justify-between items-center glass-dark rounded-xl p-3 hover:bg-white/5 transition-colors">
-                            <span className="text-sm text-white/70 font-medium">
-                              {getDayLabel(dayIndex)}
-                            </span>
-                            <div className="flex items-center space-x-3">
-                              <span className="text-lg">
-                                {item.weather[0].icon.includes('d') ? '☀️' : '🌙'}
-                              </span>
-                              <span className="text-sm font-medium text-right min-w-[80px]">
-                                {convertTemp(item.main.temp_max)}{tempSymbol}/{convertTemp(item.main.temp_min)}{tempSymbol}
-                              </span>
-                            </div>
-                          </div>
-                        );
-                      });
-                    })()}
+                    {(forecast.daily ?? []).slice(1, 8).map((day) => {
+                      const temp = (value: number) => unit === 'fahrenheit' ? Math.round(value * 9 / 5 + 32) : Math.round(value);
+                      return (
+                        <div key={day.date} className="flex justify-between items-center glass-dark rounded-xl p-3">
+                          <span className="text-sm text-white/75">{new Date(day.date + 'T12:00:00Z').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' })}</span>
+                          <span className="text-sm text-white/90">{day.weather.main} · {day.pop}% rain</span>
+                          <span className="text-sm font-medium">{temp(day.max)}° / {temp(day.min)}°</span>
+                        </div>
+                      );
+                    })}             })()}
                   </div>
                 </div>
 
