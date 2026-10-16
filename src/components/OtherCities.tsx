@@ -78,7 +78,7 @@ const getRandomCities = (count: number = 3) => {
 
 export default function OtherCities({ onCityClick, unit }: OtherCitiesProps) {
   const [citiesWeather, setCitiesWeather] = useState<CityWeather[]>([]);
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [refreshKey] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const convertTemperature = (temp: number): number => {
