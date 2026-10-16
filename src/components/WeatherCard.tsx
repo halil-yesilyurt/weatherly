@@ -93,7 +93,7 @@ export default function WeatherCard({ weather, unit }: WeatherCardProps) {
           </div>
           <p className="text-2xl font-medium">{weather.main.humidity}%</p>
           <p className="text-xs text-white/50">
-            The dew point is {convertTemperature(weather.main.feels_like)}{getTemperatureSymbol()} right now.
+            Relative humidity in the air right now.
           </p>
         </div>
 
