@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { weatherService, type GeocodeResult } from '@/services/weatherService';
 import type { WeatherData, ForecastData, TemperatureUnit } from '@/types/weather';
+import DiscoverCities from '@/components/DiscoverCities';
+import LocationMap from '@/components/LocationMap';
 
 type City = GeocodeResult;
 const DEFAULT_CITY: City = { name: 'London', country: 'GB', lat: 51.5072, lon: -0.1276 };
@@ -117,8 +119,8 @@ export default function Home() {
         <header className="topbar">
           <Link className="brand" href="/" aria-label="Weatherly home"><span className="brand-icon">☀</span> weatherly<span className="brand-dot">.</span></Link>
           <div className="header-actions">
-            <button className="icon-button" onClick={() => setDark(x=>!x)} aria-label={dark ? 'Use light theme' : 'Use dark theme'} title="Change theme">{dark ? '☀' : '☾'}</button>
-            <button className="unit-button" onClick={() => setUnit(x=>x==='celsius'?'fahrenheit':'celsius')} aria-label="Toggle temperature unit">{unit==='celsius'?'°C':'°F'} <span>⇄</span></button>
+            <button className="theme-switch" onClick={() => setDark(x=>!x)} aria-label={dark ? 'Use light theme' : 'Use dark theme'} title="Change theme"><span className="theme-moon">☾</span><span className="theme-sun">☀</span><span className="theme-knob" /></button>
+            <div className="unit-segment" role="group" aria-label="Temperature unit"><span className="unit-indicator" data-unit={unit}/><button className={unit==='celsius'?'active':''} aria-pressed={unit==='celsius'} onClick={()=>setUnit('celsius')}>°C</button><button className={unit==='fahrenheit'?'active':''} aria-pressed={unit==='fahrenheit'} onClick={()=>setUnit('fahrenheit')}>°F</button></div>
           </div>
         </header>
 
@@ -145,14 +147,14 @@ export default function Home() {
 
         {favorites.length>0 && <nav className="favorite-strip" aria-label="Favorite cities">{favorites.map(x=><button key={x.lat+':'+x.lon} onClick={()=>selectCity(x)} className={x.lat===city.lat&&x.lon===city.lon?'selected':''}>☆ {x.name}</button>)}</nav>}
         {error && <div className="error-banner" role="alert">{error} <button onClick={()=>loadWeather(city)}>Retry</button></div>}
-        {loading && !weather && <div className="loading" role="status">Loading your forecast…</div>}
+        {loading && !weather && <div className="dashboard skeleton-dashboard" role="status" aria-label="Loading forecast"><div className="hero panel skeleton-block"/><div className="details panel skeleton-block"/><div className="hourly panel skeleton-block"/><div className="weekly panel skeleton-block"/></div>}
         {weather && <div className={loading?'dashboard updating':'dashboard'}>
           <div className="hero panel">
             <div className="hero-heading">
               <div><p className="eyebrow">CURRENT WEATHER</p><h2>{city.name}{city.country?', '+city.country:''}</h2><p className="date">{new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}</p></div>
               <div className="hero-controls"><button className="favorite-button" onClick={share} aria-label="Copy shareable city link" title="Share this city">{copied?'✓':'↗'}</button><button className={'favorite-button '+(currentFavorite?'saved':'')} onClick={toggleFavorite} aria-label={currentFavorite?'Remove favorite city':'Add favorite city'} title={currentFavorite?'Remove from favorites':'Save city'}>{currentFavorite?'★':'☆'}</button></div>
             </div>
-            <div className="temperature-display"><div><span className="big-temp">{temp(weather.main.temp)}°</span><p className="condition">{weather.weather[0].description}</p><p className="feels">Feels like {temp(weather.main.feels_like)}{suffix}</p></div><span className="hero-symbol" role="img" aria-label={weather.weather[0].description}>{symbol(weather.weather[0].icon)}</span></div>
+            <div className="temperature-display"><div><span className="big-temp" key={unit+city.name}>{temp(weather.main.temp)}°</span><p className="condition">{weather.weather[0].description}</p><p className="feels">Feels like {temp(weather.main.feels_like)}{suffix}</p></div><span className="hero-symbol" key={weather.weather[0].icon} role="img" aria-label={weather.weather[0].description}>{symbol(weather.weather[0].icon)}</span></div>
             <div className="hero-bottom"><span>↑ {temp(weather.main.temp_max)}° High</span><span>↓ {temp(weather.main.temp_min)}° Low</span><span>Updated {formatHour(weather.dt,weather.timezone)} local</span></div>
           </div>
           <div className="details panel"><div className="section-title"><h3>Today&apos;s highlights</h3><span>At a glance</span></div>
@@ -171,7 +173,8 @@ export default function Home() {
           <section className="weekly panel"><div className="section-title"><h3>7-day forecast</h3><span>This week</span></div>
             <div className="daily-list">{daily.map(x=><div className="day-row" key={x.date}><span className="day-name">{new Date(x.date+'T12:00:00Z').toLocaleDateString('en-US',{weekday:'short',timeZone:'UTC'})}</span><span className="day-condition">{symbol(x.weather.icon)} <span>{x.weather.description}</span></span><span className="rain">💧 {x.pop}%</span><div className="temp-track" aria-hidden="true"><span style={{left:(Math.max(0,Math.min(100,(x.min+20)/70*100)))+'%',right:(100-Math.max(0,Math.min(100,(x.max+20)/70*100)))+'%'}}/></div><span className="day-temps">{temp(x.max)}° <small>{temp(x.min)}°</small></span></div>)}</div>
           </section>
-          <div className="about panel"><span className="about-icon">🌍</span><div><h3>Explore the world</h3><p>Search any city, save your favorites, and follow the forecast wherever you go.</p></div><button onClick={()=>document.querySelector<HTMLInputElement>('.search-wrap input')?.focus()}>Explore cities ↗</button></div>
+          <DiscoverCities currentCity={city.name} unit={unit} onSelect={selectCity}/>
+          <div className="map-section panel"><div className="section-title"><div><p className="eyebrow">EXPLORE THE PLACE</p><h3>Where in the world?</h3></div><span>OpenStreetMap</span></div><LocationMap key={city.lat+':'+city.lon} weather={weather}/></div>
         </div>}
         <footer>Weatherly · Forecast data by <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a> · Made for curious skies</footer>
       </div>
