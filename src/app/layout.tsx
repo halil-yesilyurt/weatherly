@@ -14,11 +14,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Weatherly - Beautiful Weather App",
-  description: "A clean and modern weather app providing real-time weather data and forecasts",
+  title: "Weatherly | Your daily forecast",
+  description: "Explore accurate hourly and 7-day weather forecasts for cities around the world. Save favorite locations and personalize your experience.",
   keywords: "weather, forecast, temperature, climate, weatherly",
   authors: [{ name: "Weatherly Team" }],
-  viewport: "width=device-width, initial-scale=1",
 };
 
 export default function RootLayout({
@@ -29,7 +28,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 min-h-screen`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}
       >
         {children}
         <Analytics />
