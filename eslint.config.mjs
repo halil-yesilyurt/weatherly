@@ -10,6 +10,11 @@ const compat = new FlatCompat({
 });
 
 const eslintConfig = [
+  // ESLint flat config does not automatically honor .gitignore.
+  // A local next dev/build run creates generated files that must not be linted.
+  {
+    ignores: [".next/**", "out/**", "build/**", "coverage/**", "next-env.d.ts"],
+  },
   ...compat.extends("next/core-web-vitals", "next/typescript"),
 ];
 
