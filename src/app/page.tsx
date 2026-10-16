@@ -25,6 +25,9 @@ export default function Home() {
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState<City[]>([]);
   const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState(false);
+  const [searchComplete, setSearchComplete] = useState(false);
+  const [locating, setLocating] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [forecast, setForecast] = useState<ForecastData | null>(null);
@@ -74,25 +77,28 @@ export default function Home() {
 
   useEffect(() => {
     const id = ++latestQuery.current;
-    if (query.trim().length < 2) { setSuggestions([]); setSearching(false); return; }
+    if (query.trim().length < 2) { setSuggestions([]); setSearching(false); setSearchComplete(false); setSearchError(false); return; }
     const controller = new AbortController();
     const timer = window.setTimeout(async () => {
       setSearching(true);
+      setSearchComplete(false);
+      setSearchError(false);
       try {
         const results = await weatherService.searchCities(query.trim(), 8, controller.signal);
-        if (id === latestQuery.current) setSuggestions(results);
-      } catch { if (id === latestQuery.current) setSuggestions([]); }
+        if (id === latestQuery.current) { setSuggestions(results); setSearchComplete(true); }
+      } catch { if (id === latestQuery.current) { setSuggestions([]); setSearchError(true); setSearchComplete(true); } }
       finally { if (id === latestQuery.current) setSearching(false); }
     }, 300);
     return () => { controller.abort(); clearTimeout(timer); };
   }, [query]);
 
   const selectCity = (selected: City) => {
-    setCity(selected); setQuery(''); setSuggestions([]); setSelectedIndex(-1);
+    setCity(selected); setQuery(''); setSuggestions([]); setSelectedIndex(-1); setSearchComplete(false); setSearchError(false); setCopied(false);
   };
   const searchSubmit = () => {
     const selected = suggestions[selectedIndex] ?? suggestions[0];
     if (selected) selectCity(selected);
+    else if (query.trim().length >= 2) setSearchComplete(true);
   };
   const currentFavorite = favorites.some(x => x.lat === city.lat && x.lon === city.lon);
   const toggleFavorite = () => setFavorites(xs => currentFavorite
@@ -106,9 +112,15 @@ export default function Home() {
     try { await navigator.clipboard.writeText(url.toString()); setCopied(true); }
     catch { setError('Could not copy this location link'); }
   };
-  const locate = () => weatherService.getCurrentPosition()
-    .then(pos => selectCity({name:'Current location',country:'',lat:pos.latitude,lon:pos.longitude}))
-    .catch(cause => setError(cause instanceof Error ? cause.message : 'Location unavailable'));
+  const locate = async () => {
+    setLocating(true);
+    try {
+      const pos = await weatherService.getCurrentPosition();
+      selectCity({name:'Current location',country:'',lat:pos.latitude,lon:pos.longitude});
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Location unavailable');
+    } finally { setLocating(false); }
+  };
   const temp = (n: number) => Math.round(unit === 'fahrenheit' ? n*9/5+32 : n);
   const suffix = unit === 'fahrenheit' ? '°F' : '°C';
   const daily = forecast?.daily?.slice(0,7) ?? [];
@@ -131,23 +143,24 @@ export default function Home() {
             <div className="search-wrap">
               <form onSubmit={e=>{e.preventDefault();searchSubmit();}} role="search">
                 <MagnifyingGlassIcon className="search-icon" aria-hidden="true"/>
-                <input aria-label="Search for a city" placeholder="Search for a city..." value={query} onChange={e=>{setQuery(e.target.value);setSelectedIndex(-1);}} onKeyDown={e=>{
+                <input aria-label="Search for a city" placeholder="Search for a city..." value={query} onChange={e=>{setQuery(e.target.value);setSelectedIndex(-1);setSearchComplete(false);}} onKeyDown={e=>{
                   if(e.key==='ArrowDown'){e.preventDefault();setSelectedIndex(i=>Math.min(i+1,suggestions.length-1));}
                   if(e.key==='ArrowUp'){e.preventDefault();setSelectedIndex(i=>Math.max(-1,i-1));}
                   if(e.key==='Escape'){setQuery('');setSuggestions([]);}
-                }} role="combobox" aria-autocomplete="list" aria-expanded={suggestions.length>0} aria-controls="city-results" autoComplete="off"/>
+                }} role="combobox" aria-autocomplete="list" aria-expanded={suggestions.length>0 || (searchComplete && query.trim().length>=2)} aria-controls="city-results" autoComplete="off"/>
                 {searching && <span className="search-spinner" aria-label="Searching">◌</span>}
               </form>
-              {suggestions.length>0 && <div id="city-results" className="suggestions" role="listbox">
+              {(suggestions.length>0 || (searchComplete && query.trim().length>=2)) && <div id="city-results" className="suggestions" role="listbox">
                 {suggestions.map((x,i)=><button key={x.lat+':'+x.lon} className={selectedIndex===i?'active':''} role="option" aria-selected={selectedIndex===i} onClick={()=>selectCity(x)}>{x.name}{x.state?', '+x.state:''} <span>{x.country}</span></button>)}
+                {suggestions.length===0 && <p className="search-empty" role="status">{searchError ? 'City search is unavailable. Please try again.' : 'No matching cities. Try another spelling or a nearby city.'}</p>}
               </div>}
             </div>
-            <button className="location-button" onClick={locate} title="Use my location" aria-label="Use my location"><MapPinIcon className="location-icon" aria-hidden="true"/> <span>My location</span></button>
+            <button className="location-button" onClick={locate} disabled={locating} title="Use my location" aria-label={locating ? 'Locating you' : 'Use my location'}><MapPinIcon className="location-icon" aria-hidden="true"/> <span>{locating ? 'Locating…' : 'My location'}</span></button>
           </div>
         </section>
 
         {favorites.length>0 && <nav className="favorite-strip" aria-label="Favorite cities">{favorites.map(x=><button key={x.lat+':'+x.lon} onClick={()=>selectCity(x)} className={x.lat===city.lat&&x.lon===city.lon?'selected':''}>☆ {x.name}</button>)}</nav>}
-        {error && <div className="error-banner" role="alert">{error} <button onClick={()=>loadWeather(city)}>Retry</button></div>}
+        {error && <div className="error-banner" role="alert"><strong>Forecast unavailable</strong><span>{error}</span><div><button type="button" onClick={()=>loadWeather(city)}>Try again ↻</button><button type="button" onClick={()=>{setError('');selectCity(DEFAULT_CITY);loadWeather(DEFAULT_CITY);}}>Show London</button><button type="button" onClick={()=>setError('')} aria-label="Dismiss error">✕</button></div></div>}
         {loading && !weather && <div className="dashboard skeleton-dashboard" role="status" aria-label="Loading forecast"><div className="hero panel skeleton-block"/><div className="details panel skeleton-block"/><div className="hourly panel skeleton-block"/><div className="weekly panel skeleton-block"/></div>}
         {weather && <div className={loading?'dashboard updating':'dashboard'}>
           <div className={"hero panel weather-" + (weather.weather[0].main.toLowerCase().replace(/[^a-z]/g, "")) + (weather.weather[0].icon.endsWith("n")?" is-night":"")}>
