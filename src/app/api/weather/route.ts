@@ -20,9 +20,9 @@ function condition(code: number, isDay = true) {
   const [main, description, icon] = weatherCodes[code] ?? ['Clouds', 'cloudy', '04'];
   return { id: code, main, description, icon: icon + (isDay ? 'd' : 'n') };
 }
-function epoch(time: string): number {
+function epoch(time: string, offset = 0): number {
   // Open-Meteo timestamps are timezone-local when timezone=auto. Request UTC for unambiguous parsing.
-  return Date.parse(time + 'Z') / 1000;
+  return Date.parse(time + 'Z') / 1000 - offset;
 }
 function numberParam(value: string | null, min: number, max: number): number | null {
   if (value === null || value.trim() === '') return null;
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
   const lon = numberParam(request.nextUrl.searchParams.get('lon'), -180, 180);
   if (lat === null || lon === null) return NextResponse.json({ error: 'Invalid coordinates' }, { status: 400 });
   const params = new URLSearchParams({
-    latitude: String(lat), longitude: String(lon), timezone: 'GMT',
+    latitude: String(lat), longitude: String(lon), timezone: 'auto',
     current: 'temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,cloud_cover,pressure_msl,wind_speed_10m,wind_direction_10m',
     hourly: 'temperature_2m,relative_humidity_2m,apparent_temperature,precipitation_probability,weather_code,wind_speed_10m,wind_direction_10m,visibility',
     daily: 'weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_probability_max',
@@ -46,10 +46,11 @@ export async function GET(request: NextRequest) {
     const data = await upstream.json();
     if (!data.current || !data.hourly || !data.daily) throw new Error('Incomplete forecast');
     const current = data.current;
+    const offset: number = data.utc_offset_seconds ?? 0;
     const dayIndex = Math.max(0, data.daily.time.findIndex((d: string) => d === current.time.slice(0, 10)));
-    const currentTime = epoch(current.time);
-    const sunrise = epoch(data.daily.sunrise[dayIndex]);
-    const sunset = epoch(data.daily.sunset[dayIndex]);
+    const currentTime = epoch(current.time, offset);
+    const sunrise = epoch(data.daily.sunrise[dayIndex], offset);
+    const sunset = epoch(data.daily.sunset[dayIndex], offset);
     const weather = {
       coord: { lat, lon }, weather: [condition(current.weather_code, Boolean(current.is_day))],
       base: 'open-meteo', main: {
@@ -60,10 +61,10 @@ export async function GET(request: NextRequest) {
       visibility: data.hourly.visibility?.[Math.max(0, data.hourly.time.indexOf(current.time.slice(0, 13) + ':00'))] ?? 10000,
       wind: { speed: current.wind_speed_10m, deg: current.wind_direction_10m },
       clouds: { all: current.cloud_cover }, dt: currentTime,
-      sys: { country: '', sunrise, sunset }, timezone: 0, id: 0, name: '', cod: 200,
+      sys: { country: '', sunrise, sunset }, timezone: offset, id: 0, name: '', cod: 200,
     };
     const list = data.hourly.time.map((t: string, i: number) => ({
-      dt: epoch(t), main: {
+      dt: epoch(t, offset), main: {
         temp: data.hourly.temperature_2m[i], feels_like: data.hourly.apparent_temperature[i],
         temp_min: data.hourly.temperature_2m[i], temp_max: data.hourly.temperature_2m[i],
         pressure: current.pressure_msl, humidity: data.hourly.relative_humidity_2m[i],
@@ -75,14 +76,14 @@ export async function GET(request: NextRequest) {
       sys: { pod: 'd' }, dt_txt: t,
     }));
     const daily = data.daily.time.map((t: string, i: number) => ({
-      date: t, dt: epoch(t + 'T12:00'), min: data.daily.temperature_2m_min[i],
+      date: t, dt: epoch(t + 'T12:00', offset), min: data.daily.temperature_2m_min[i],
       max: data.daily.temperature_2m_max[i], pop: data.daily.precipitation_probability_max[i] ?? 0,
       weather: condition(data.daily.weather_code[i]),
     }));
     return NextResponse.json({
       weather, forecast: {
         cod: '200', message: 0, cnt: list.length, list,
-        city: { id: 0, name: '', coord: { lat, lon }, country: '', population: 0, timezone: 0, sunrise, sunset },
+        city: { id: 0, name: '', coord: { lat, lon }, country: '', population: 0, timezone: offset, sunrise, sunset },
         daily,
       },
       source: 'Open-Meteo', updatedAt: current.time,
