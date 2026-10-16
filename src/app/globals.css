@@ -402,3 +402,5 @@ html::-webkit-scrollbar-thumb:hover { background: #7995b8; }
 .weatherly .hourly-scroll::-webkit-scrollbar-thumb:hover { background: #2867dc; }
 .weatherly.dark-mode .hourly-scroll { scrollbar-color: var(--accent) var(--subtle); }
 .weatherly.dark-mode .hourly-scroll::-webkit-scrollbar-thumb { background: var(--accent); }
+
+.weatherly .copy-confirmation { align-self: center; color: #fff; background: #0f366188; padding: 7px 9px; border-radius: 9px; font-size: 11px; white-space: nowrap; }
