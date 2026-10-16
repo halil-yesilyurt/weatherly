@@ -339,3 +339,11 @@ footer a {color:var(--accent)}
 .weatherly .error-banner button {margin:0;padding:8px 11px;border:1px solid currentColor;border-radius:9px;background:transparent;text-decoration:none;font-weight:700;font-size:12px}
 .weatherly .error-banner button:hover {background:#9b463016}
 @media(prefers-reduced-motion:reduce){.weatherly .state-loading-sun{animation:none}}
+
+.weatherly .site-footer {display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;padding:34px 0 44px;margin-top:20px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);text-align:left}
+.weatherly .footer-brand {color:var(--ink);font-weight:800;font-size:14px;letter-spacing:-.3px}
+.weatherly .footer-brand span {color:var(--muted);font-weight:500;font-size:12px;margin-left:6px}
+.weatherly .site-footer nav {display:flex;align-items:center;gap:8px 24px;flex-wrap:wrap}
+.weatherly .site-footer a {color:var(--muted);text-decoration:none;transition:color .2s ease}
+.weatherly .site-footer a:hover {color:var(--accent)}
+@media(max-width:620px){.weatherly .site-footer {align-items:flex-start;flex-direction:column}.weatherly .site-footer nav {gap:12px 18px}}
