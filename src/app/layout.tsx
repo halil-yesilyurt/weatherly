@@ -10,6 +10,7 @@ export const metadata: Metadata = {
   description: "Explore accurate hourly and 7-day weather forecasts for cities around the world. Save favorite locations and personalize your experience.",
   keywords: "weather, forecast, temperature, climate, weatherly",
   authors: [{ name: "Weatherly Team" }],
+  icons: { icon: [{ url: "/weatherly-icon.svg", type: "image/svg+xml" }], shortcut: "/weatherly-icon.svg", apple: "/weatherly-icon.svg" },
 };
 
 export default function RootLayout({
