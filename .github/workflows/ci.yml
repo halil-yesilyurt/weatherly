@@ -13,6 +13,8 @@ jobs:
           node-version: '20'
           cache: npm
       - run: npm ci
+      - name: SEO indexing contract
+        run: node --test tests/seo-indexing.test.mjs
       - run: npm run type-check
       - run: npm run lint
       - run: npm run build
